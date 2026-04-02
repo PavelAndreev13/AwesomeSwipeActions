@@ -109,7 +109,7 @@ private struct TrailingEdgeDemo: View {
                         Divider().padding(.leading, 68)
                     }
                 }
-                .background(Color(.systemBackground))
+                .background(.clear)
             }
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Trailing Edge")
@@ -128,7 +128,7 @@ private struct LeadingEdgeDemo: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVStack(spacing: 1) {
+                LazyVStack(spacing: 5) {
                     ForEach(items) { item in
                         DemoRow(item: item)
                             .awesomeSwipeActions(
@@ -143,10 +143,11 @@ private struct LeadingEdgeDemo: View {
                                     toggleFavorite(item.id)
                                 }
                             }
-                        Divider().padding(.leading, 68)
+                         
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
                 }
-                .background(Color(.systemBackground))
+                .background(.clear)
             }
             .padding(.horizontal, 20)
             .background(Color(.systemGroupedBackground))
@@ -174,7 +175,7 @@ private struct BothEdgesDemo: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVStack(spacing: 1) {
+                LazyVStack(spacing: 5) {
                     ForEach(items) { item in
                         DemoRow(
                             item: item,
@@ -206,11 +207,12 @@ private struct BothEdgesDemo: View {
                                 items.removeAll { $0.id == item.id }
                             }
                         }
-                        Divider().padding(.leading, 68)
+                    
                     }
                 }
-                .background(Color(.systemBackground))
+                .background(.clear)
             }
+            .padding(.horizontal, 20)
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Both Edges")
             .navigationBarTitleDisplayMode(.inline)
@@ -236,7 +238,7 @@ private struct StandardButtonDemo: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVStack(spacing: 1) {
+                LazyVStack(spacing: 10) {
                     ForEach(items) { item in
                         DemoRow(item: item)
                             .awesomeSwipeActions(
@@ -247,6 +249,7 @@ private struct StandardButtonDemo: View {
                                 // Standard SwiftUI Button — no AwesomeSwipeButton needed
                                 Button { print("Archive \(item.title)") } label: {
                                     Label("Archive", systemImage: "archivebox")
+                                        .font(.caption2)
                                         .frame(width: 74)
                                         .frame(maxHeight: .infinity)
                                 }
@@ -256,16 +259,20 @@ private struct StandardButtonDemo: View {
                                     items.removeAll { $0.id == item.id }
                                 } label: {
                                     Label("Delete", systemImage: "trash")
+                                        .font(.caption)
                                         .frame(width: 74)
                                         .frame(maxHeight: .infinity)
                                 }
                                 .tint(.red)   // needed: custom ButtonStyle doesn't inherit role colour
                             }
-                        Divider().padding(.leading, 68)
+                            .clipShape(RoundedRectangle(cornerRadius: 20))
+                       
                     }
                 }
-                .background(Color(.systemBackground))
+               
+                .background(.clear)
             }
+            .padding(.horizontal, 20)
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Standard Button")
             .navigationBarTitleDisplayMode(.inline)
@@ -275,8 +282,8 @@ private struct StandardButtonDemo: View {
 
 struct AwesomeSwipeActions_Previews: PreviewProvider {
     static var previews: some View {
-        TrailingEdgeDemo()
-            .previewDisplayName("Trailing — Edit & Delete")
+//        TrailingEdgeDemo()
+//            .previewDisplayName("Trailing — Edit & Delete")
         LeadingEdgeDemo()
             .previewDisplayName("Leading — Done & Star")
         BothEdgesDemo()

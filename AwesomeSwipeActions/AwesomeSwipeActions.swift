@@ -31,17 +31,22 @@ import SwiftUI
 
 // Previews use UIColor system colours — guard to iOS/tvOS only.
 #if DEBUG && canImport(UIKit)
-private struct PreviewItem: Identifiable {
+
+fileprivate struct PreviewItem: Identifiable {
     let id: Int
     let title: String
     let subtitle: String
 }
 
-private let sampleItems = (0..<20).map {
-    PreviewItem(id: $0, title: "Item \($0 + 1)", subtitle: "Swipe left or right")
+private let mockItems: [PreviewItem] = (0..<20).map {
+        PreviewItem(
+            id: $0,
+            title: "Item \($0 + 1)",
+            subtitle: "Swipe left or right"
+        )
 }
 
-private struct DemoRow: View {
+fileprivate struct DemoRow: View {
     let item: PreviewItem
     var isDone: Bool = false
     var isFavorite: Bool = false
@@ -80,14 +85,14 @@ private struct DemoRow: View {
 // MARK: Preview Views
 
 /// Trailing edge demo: Edit + Delete buttons revealed by swiping left.
-private struct TrailingEdgeDemo: View {
+fileprivate struct TrailingEdgeDemo: View {
     @State private var coordinator = AwesomeSwipeCoordinator()
-    @State private var items = sampleItems
+    @State private var items = mockItems
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVStack(spacing: 1) {
+                LazyVStack(spacing: 10) {
                     ForEach(items) { item in
                         DemoRow(item: item)
                             .awesomeSwipeActions(
@@ -106,11 +111,13 @@ private struct TrailingEdgeDemo: View {
                                     items.removeAll { $0.id == item.id }
                                 }
                             }
-                        Divider().padding(.leading, 68)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                     
                     }
                 }
                 .background(.clear)
             }
+            .padding(.horizontal, 20)
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Trailing Edge")
             .navigationBarTitleDisplayMode(.inline)
@@ -119,9 +126,9 @@ private struct TrailingEdgeDemo: View {
 }
 
 /// Leading edge demo: Done + Star buttons revealed by swiping right.
-private struct LeadingEdgeDemo: View {
+fileprivate struct LeadingEdgeDemo: View {
     @State private var coordinator = AwesomeSwipeCoordinator()
-    @State private var items = sampleItems
+    @State private var items = mockItems
     @State private var doneIDs: Set<Int> = []
     @State private var favoriteIDs: Set<Int> = []
 
@@ -166,9 +173,9 @@ private struct LeadingEdgeDemo: View {
 }
 
 /// Both edges demo: swipe right for Done/Star, swipe left for Delete.
-private struct BothEdgesDemo: View {
+fileprivate struct BothEdgesDemo: View {
     @State private var coordinator = AwesomeSwipeCoordinator()
-    @State private var items = sampleItems
+    @State private var items = mockItems
     @State private var doneIDs: Set<Int> = []
     @State private var favoriteIDs: Set<Int> = []
 
@@ -231,9 +238,9 @@ private struct BothEdgesDemo: View {
 // MARK: PreviewProvider
 
 /// Standard SwiftUI Button demo — shows that .tint() + .frame() is all that's needed.
-private struct StandardButtonDemo: View {
+fileprivate struct StandardButtonDemo: View {
     @State private var coordinator = AwesomeSwipeCoordinator()
-    @State private var items = sampleItems
+    @State private var items = mockItems
 
     var body: some View {
         NavigationStack {
@@ -282,8 +289,8 @@ private struct StandardButtonDemo: View {
 
 struct AwesomeSwipeActions_Previews: PreviewProvider {
     static var previews: some View {
-//        TrailingEdgeDemo()
-//            .previewDisplayName("Trailing — Edit & Delete")
+        TrailingEdgeDemo()
+            .previewDisplayName("Trailing — Edit & Delete")
         LeadingEdgeDemo()
             .previewDisplayName("Leading — Done & Star")
         BothEdgesDemo()

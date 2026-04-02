@@ -137,21 +137,24 @@ fileprivate struct LeadingEdgeDemo: View {
             ScrollView {
                 LazyVStack(spacing: 5) {
                     ForEach(items) { item in
-                        DemoRow(item: item)
-                            .awesomeSwipeActions(
-                                id: item.id,
-                                coordinator: coordinator,
-                                edge: .leading
-                            ) {
-                                AwesomeSwipeButton(tint: .green, systemImage: "checkmark") {
-                                    toggleDone(item.id)
-                                }
-                                AwesomeSwipeButton(tint: .orange, systemImage: "star.fill") {
-                                    toggleFavorite(item.id)
-                                }
+                        DemoRow(
+                            item: item,
+                            isDone: doneIDs.contains(item.id),
+                            isFavorite: favoriteIDs.contains(item.id)
+                        )
+                        .awesomeSwipeActions(
+                            id: item.id,
+                            coordinator: coordinator,
+                            edge: .leading
+                        ) {
+                            AwesomeSwipeButton(tint: .green, systemImage: "checkmark") {
+                                toggleDone(item.id)
                             }
-                         
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            AwesomeSwipeButton(tint: .orange, systemImage: "star.fill") {
+                                toggleFavorite(item.id)
+                            }
+                        }
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
                 }
                 .background(.clear)
@@ -189,6 +192,7 @@ fileprivate struct BothEdgesDemo: View {
                             isDone: doneIDs.contains(item.id),
                             isFavorite: favoriteIDs.contains(item.id)
                         )
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
                         .awesomeSwipeActions(
                             id: item.id,
                             coordinator: coordinator,

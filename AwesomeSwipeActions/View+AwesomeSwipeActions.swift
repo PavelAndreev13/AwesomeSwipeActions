@@ -2,25 +2,29 @@ import SwiftUI
 
 extension View {
 
-    /// Adds custom swipe actions to a row, analogous to SwiftUI's `swipeActions`.
+    /// Adds custom swipe actions to a row inside a `ScrollView` — the drop-in
+    /// alternative to SwiftUI's `swipeActions`, which only works with `List`.
     ///
-    /// Apply this modifier to each row inside a `List` or `ForEach`. Provide a
-    /// shared `AwesomeSwipeCoordinator` to ensure only one row is open at a time.
+    /// Apply this modifier to each row inside `LazyVStack` or `LazyHStack`.
+    /// Provide a shared `AwesomeSwipeCoordinator` to ensure only one row is
+    /// open at a time across the entire scroll view.
     ///
     /// ```swift
     /// @State private var coordinator = AwesomeSwipeCoordinator()
     ///
-    /// List {
-    ///     ForEach(items) { item in
-    ///         Text(item.title)
-    ///             .awesomeSwipeActions(id: item.id, coordinator: coordinator) {
-    ///                 AwesomeSwipeButton(tint: .blue, systemImage: "pencil") {
-    ///                     edit(item)
+    /// ScrollView {
+    ///     LazyVStack(spacing: 0) {
+    ///         ForEach(items) { item in
+    ///             Text(item.title)
+    ///                 .awesomeSwipeActions(id: item.id, coordinator: coordinator) {
+    ///                     AwesomeSwipeButton(tint: .blue, systemImage: "pencil") {
+    ///                         edit(item)
+    ///                     }
+    ///                     AwesomeSwipeButton(tint: .red, role: .destructive, systemImage: "trash") {
+    ///                         delete(item)
+    ///                     }
     ///                 }
-    ///                 AwesomeSwipeButton(tint: .red, role: .destructive, systemImage: "trash") {
-    ///                     delete(item)
-    ///                 }
-    ///             }
+    ///         }
     ///     }
     /// }
     /// ```

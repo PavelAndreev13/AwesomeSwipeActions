@@ -35,7 +35,7 @@ ScrollView {                       // ← swipeActions does NOT work here
 
 ### Comparison with swipeActions
 
-| | `swipeActions` | `AwesomeSwipeAction` |
+| | `swipeActions` | `AwesomeSwipeActions` |
 |---|:---:|:---:|
 | `List` | ✅ | ✅ |
 | `ScrollView + LazyVStack` | ❌ | ✅ |
@@ -51,13 +51,13 @@ ScrollView {                       // ← swipeActions does NOT work here
 
 ### 1 — Create a coordinator
 
-Create one ``AwesomeSwipeCoordinator`` per scroll view using `@State`. It ensures only one row is open at a time across the entire list.
+Create one ``AwesomeSwipeCoordinator`` per scroll view using `@State`. It ensures only one row is open at a time across the entire scroll view.
 
 ```swift
 @State private var swipeCoordinator = AwesomeSwipeCoordinator()
 ```
 
-### 2 — Wrap your list in ScrollView + LazyVStack
+### 2 — Wrap your rows in ScrollView + LazyVStack
 
 Attach `.awesomeSwipeActions` to each row inside `ForEach`. Pass the same coordinator instance to every row.
 

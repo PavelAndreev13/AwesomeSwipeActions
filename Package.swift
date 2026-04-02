@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "AwesomeSwipeAction",
+    name: "AwesomeSwipeActions",
     platforms: [
         .iOS(.v17),
         .macOS(.v14),       // macOS 14 — full SwiftUI parity with the iOS target
@@ -10,14 +10,14 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "AwesomeSwipeAction",
-            targets: ["AwesomeSwipeAction"]
+            name: "AwesomeSwipeActions",
+            targets: ["AwesomeSwipeActions"]
         )
     ],
     targets: [
         .target(
-            name: "AwesomeSwipeAction",
-            path: "AwesomeSwipeAction"
+            name: "AwesomeSwipeActions",
+            path: "AwesomeSwipeActions"
             // .docc catalogue in this directory is picked up automatically by DocC.
         )
     ]

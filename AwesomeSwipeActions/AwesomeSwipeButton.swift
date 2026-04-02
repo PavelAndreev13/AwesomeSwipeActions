@@ -17,13 +17,15 @@ import SwiftUI
 /// .awesomeSwipeActions(id: item.id, coordinator: coordinator) {
 ///     Button { edit(item) } label: {
 ///         Label("Edit", systemImage: "pencil")
-///             .frame(width: 74, maxHeight: .infinity)
+///             .frame(width: 74)
+///             .frame(maxHeight: .infinity)
 ///     }
 ///     .tint(.blue)
 ///
 ///     Button(role: .destructive) { delete(item) } label: {
 ///         Label("Delete", systemImage: "trash")
-///             .frame(width: 74, maxHeight: .infinity)
+///             .frame(width: 74)
+///             .frame(maxHeight: .infinity)
 ///     }
 ///     .tint(.red)
 /// }

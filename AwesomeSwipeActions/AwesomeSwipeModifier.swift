@@ -2,7 +2,7 @@ import Combine
 import SwiftUI
 
 /// Core ViewModifier that implements the swipe-to-reveal-actions behaviour.
-/// Applied to list rows via `View.awesomeSwipeActions(...)`.
+/// Applied to rows inside a `ScrollView` via `View.awesomeSwipeActions(...)`.
 ///
 /// ## How panel width is measured
 /// `SwipeActionsPanel` always lives in the ZStack (even when the row is closed)

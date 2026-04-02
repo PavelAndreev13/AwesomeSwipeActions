@@ -1,4 +1,5 @@
-# AwesomeSwipeActions
+
+<img width="2042" height="483" alt="Logo" src="https://github.com/user-attachments/assets/31412f39-dc89-4abd-8d2e-4cee9cfb87ac" />
 
 Swipe actions for `ScrollView` — everything SwiftUI's `swipeActions` gives you inside `List`, now available in any scrollable container.
 

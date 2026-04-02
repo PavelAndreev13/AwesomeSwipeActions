@@ -4,16 +4,18 @@ import SwiftUI
 /// Coordinates swipe state across all rows in a list, ensuring only one
 /// row is open at a time.
 ///
-/// Create one instance per list with `@State` and pass it to each row's
+/// Create one instance per scroll view with `@State` and pass it to each row's
 /// `awesomeSwipeActions` modifier:
 ///
 /// ```swift
 /// @State private var coordinator = AwesomeSwipeCoordinator()
 ///
-/// List {
-///     ForEach(items) { item in
-///         Row(item)
-///             .awesomeSwipeActions(id: item.id, coordinator: coordinator) { ... }
+/// ScrollView {
+///     LazyVStack(spacing: 0) {
+///         ForEach(items) { item in
+///             Row(item)
+///                 .awesomeSwipeActions(id: item.id, coordinator: coordinator) { ... }
+///         }
 ///     }
 /// }
 /// ```

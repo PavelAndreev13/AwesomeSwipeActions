@@ -9,21 +9,6 @@
 /// - ``SwipeActionEdge``         — `.leading` or `.trailing`
 /// - `View.awesomeSwipeActions`  — the main modifier applied to each row
 ///
-/// ## Usage with List
-/// ```swift
-/// @State private var coordinator = AwesomeSwipeCoordinator()
-///
-/// List {
-///     ForEach(items) { item in
-///         Text(item.title)
-///             .awesomeSwipeActions(id: item.id, coordinator: coordinator) {
-///                 AwesomeSwipeButton(tint: .blue, systemImage: "pencil") { edit(item) }
-///                 AwesomeSwipeButton(tint: .red, role: .destructive, systemImage: "trash") { delete(item) }
-///             }
-///     }
-/// }
-/// ```
-///
 /// ## Usage with ScrollView + LazyVStack
 /// ```swift
 /// @State private var coordinator = AwesomeSwipeCoordinator()
@@ -252,7 +237,7 @@ private struct StandardButtonDemo: View {
     }
 }
 
-struct AwesomeSwipeAction_Previews: PreviewProvider {
+struct AwesomeSwipeActions_Previews: PreviewProvider {
     static var previews: some View {
         TrailingEdgeDemo()
             .previewDisplayName("Trailing — Edit & Delete")

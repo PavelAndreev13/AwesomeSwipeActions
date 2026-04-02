@@ -95,6 +95,9 @@ struct AwesomeSwipeModifier<ID: Hashable, ActionContent: View>: ViewModifier {
         .onPreferenceChange(SwipePanelWidthKey.self) { w in
             if w > 0 { panelWidth = w }
         }
+        // Reset the preference so it doesn't leak to a parent modifier
+        // when two awesomeSwipeActions are stacked on the same row.
+        .transformPreference(SwipePanelWidthKey.self) { $0 = 0 }
         // React to coordinator changes imperatively (NOT during body evaluation)
         .onReceive(coordinator.$activeID) { newActiveID in
             guard isSwiped, newActiveID != anyID else { return }

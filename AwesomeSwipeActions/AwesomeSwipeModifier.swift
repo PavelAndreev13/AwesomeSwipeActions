@@ -64,14 +64,17 @@ struct AwesomeSwipeModifier<ID: Hashable, ActionContent: View>: ViewModifier {
                         Color.clear.onAppear { rowWidth = geo.size.width }
                     }
                 }
-                // Tap overlay: closes row when user taps the content while open
+                // Tap overlay: closes row when user taps the content while open.
+                // contentShape is offset to match the visual position so taps in the
+                // revealed panel area pass through to the buttons below.
                 .overlay {
                     if isSwiped {
                         Color.clear
-                            .contentShape(.rect)
+                            .contentShape(Rectangle().offset(x: offset))
                             .onTapGesture { closeAnimated() }
                     }
                 }
+                .contentShape(Rectangle().offset(x: offset))
                 .gesture(swipeGesture)
         }
         // Read the panel's natural width reported by SwipeActionsPanel

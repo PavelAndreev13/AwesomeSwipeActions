@@ -6,8 +6,8 @@ import SwiftUI
 ///   with a `.tint()` modifier gets the correct coloured background.
 /// - The panel's natural (ideal) width is reported up to
 ///   `AwesomeSwipeModifier` via `SwipePanelWidthKey`.
-/// - A `.simultaneousGesture` closes the row whenever any button is tapped,
-///   without interfering with the button's own action.
+/// - `swipeCloseAction` is injected via environment so every button style
+///   (including user-supplied ones) can close the row after the tap fires.
 struct SwipeActionsPanel<Content: View>: View {
     let content: Content
     let onActionTriggered: () -> Void
@@ -16,6 +16,8 @@ struct SwipeActionsPanel<Content: View>: View {
         HStack(spacing: 0) {
             content
         }
+        // Inject close callback so button styles can read it via @Environment
+        .environment(\.swipeCloseAction, onActionTriggered)
         // Apply swipe-action visual style to all child buttons
         .buttonStyle(SwipeActionButtonStyle())
         // Use the content's natural (ideal) horizontal size so the
@@ -29,8 +31,6 @@ struct SwipeActionsPanel<Content: View>: View {
                     .preference(key: SwipePanelWidthKey.self, value: geo.size.width)
             }
         }
-        // Close the row after any button tap without consuming the tap
-        .simultaneousGesture(TapGesture().onEnded { onActionTriggered() })
     }
 }
 

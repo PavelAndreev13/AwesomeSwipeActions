@@ -91,6 +91,16 @@ private struct AwesomeExplicitButtonStyle: ButtonStyle {
     let tint: Color
 
     func makeBody(configuration: Configuration) -> some View {
+        _AwesomeExplicitButton(configuration: configuration, tint: tint)
+    }
+}
+
+private struct _AwesomeExplicitButton: View {
+    let configuration: ButtonStyleConfiguration
+    let tint: Color
+    @Environment(\.swipeCloseAction) private var closeAction
+
+    var body: some View {
         configuration.label
             .font(.system(size: 16, weight: .medium))
             .foregroundStyle(.white)
@@ -99,6 +109,9 @@ private struct AwesomeExplicitButtonStyle: ButtonStyle {
             .background(tint)
             .opacity(configuration.isPressed ? 0.75 : 1)
             .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
+            .onChange(of: configuration.isPressed) { oldValue, newValue in
+                if oldValue && !newValue { closeAction?() }
+            }
     }
 }
 

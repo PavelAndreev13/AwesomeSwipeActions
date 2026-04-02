@@ -43,7 +43,14 @@ struct AwesomeSwipeModifier<ID: Hashable, ActionContent: View>: ViewModifier {
 
     // MARK: - Computed helpers
 
-    private var anyID: AnyHashable { AnyHashable(id) }
+    /// Combines row ID with edge so that leading and trailing modifiers on the
+    /// same row get distinct coordinator keys.
+    private struct EdgeID: Hashable {
+        let id: AnyHashable
+        let edge: SwipeActionEdge
+    }
+
+    private var anyID: AnyHashable { AnyHashable(EdgeID(id: AnyHashable(id), edge: edge)) }
 
     // MARK: - Body
 
@@ -73,7 +80,7 @@ struct AwesomeSwipeModifier<ID: Hashable, ActionContent: View>: ViewModifier {
                     }
                 }
                 .contentShape(Rectangle().offset(x: offset))
-                .gesture(swipeGesture)
+                .simultaneousGesture(swipeGesture)
 
             // MARK: Action panel
             // Positioned outside the row bounds via offset, slides in with the content.
@@ -110,6 +117,18 @@ struct AwesomeSwipeModifier<ID: Hashable, ActionContent: View>: ViewModifier {
             let dy = abs(value.translation.height)
             // Angles > 50° from horizontal are treated as vertical scroll
             gestureIsVertical = atan2(dy, dx) * 180 / .pi > 50
+
+            // If horizontal but the wrong direction for this edge (and the row
+            // is not already open), mark as ignored so the other edge's modifier
+            // that is stacked on the same row can handle it instead.
+            if gestureIsVertical == false && !isSwiped {
+                let isWrongDirection =
+                    (edge == .trailing && value.translation.width > 0) ||
+                    (edge == .leading  && value.translation.width < 0)
+                if isWrongDirection {
+                    gestureIsVertical = true
+                }
+            }
         }
 
         guard gestureIsVertical == false else { return }

@@ -43,6 +43,8 @@ private let sampleItems = (0..<20).map {
 
 private struct DemoRow: View {
     let item: PreviewItem
+    var isDone: Bool = false
+    var isFavorite: Bool = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -57,15 +59,21 @@ private struct DemoRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.title)
                     .font(.headline)
+                    .strikethrough(isDone)
+                    .foregroundStyle(isDone ? .secondary : .primary)
                 Text(item.subtitle)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
             Spacer()
+            if isFavorite {
+                Image(systemName: "star.fill")
+                    .foregroundStyle(.orange)
+            }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .background(Color(.systemBackground))
+        .background(isFavorite ? Color.orange.opacity(0.1) : Color(.systemBackground))
     }
 }
 
@@ -114,6 +122,8 @@ private struct TrailingEdgeDemo: View {
 private struct LeadingEdgeDemo: View {
     @State private var coordinator = AwesomeSwipeCoordinator()
     @State private var items = sampleItems
+    @State private var doneIDs: Set<Int> = []
+    @State private var favoriteIDs: Set<Int> = []
 
     var body: some View {
         NavigationStack {
@@ -127,10 +137,10 @@ private struct LeadingEdgeDemo: View {
                                 edge: .leading
                             ) {
                                 AwesomeSwipeButton(tint: .green, systemImage: "checkmark") {
-                                    print("Done \(item.title)")
+                                    toggleDone(item.id)
                                 }
                                 AwesomeSwipeButton(tint: .orange, systemImage: "star.fill") {
-                                    print("Favourite \(item.title)")
+                                    toggleFavorite(item.id)
                                 }
                             }
                         Divider().padding(.leading, 68)
@@ -138,46 +148,64 @@ private struct LeadingEdgeDemo: View {
                 }
                 .background(Color(.systemBackground))
             }
+            .padding(.horizontal, 20)
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Leading Edge")
             .navigationBarTitleDisplayMode(.inline)
         }
     }
+    
+    private func toggleDone(_ id: Int) {
+        if doneIDs.contains(id) { doneIDs.remove(id) } else { doneIDs.insert(id) }
+    }
+
+    private func toggleFavorite(_ id: Int) {
+        if favoriteIDs.contains(id) { favoriteIDs.remove(id) } else { favoriteIDs.insert(id) }
+    }
 }
 
-/// Both edges demo: swipe right for Done, swipe left for Delete.
+/// Both edges demo: swipe right for Done/Star, swipe left for Delete.
 private struct BothEdgesDemo: View {
     @State private var coordinator = AwesomeSwipeCoordinator()
     @State private var items = sampleItems
+    @State private var doneIDs: Set<Int> = []
+    @State private var favoriteIDs: Set<Int> = []
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 LazyVStack(spacing: 1) {
                     ForEach(items) { item in
-                        DemoRow(item: item)
-                            .awesomeSwipeActions(
-                                id: item.id,
-                                coordinator: coordinator,
-                                edge: .leading
-                            ) {
-                                AwesomeSwipeButton(tint: .green, systemImage: "checkmark") {
-                                    print("Done \(item.title)")
-                                }
+                        DemoRow(
+                            item: item,
+                            isDone: doneIDs.contains(item.id),
+                            isFavorite: favoriteIDs.contains(item.id)
+                        )
+                        .awesomeSwipeActions(
+                            id: item.id,
+                            coordinator: coordinator,
+                            edge: .leading
+                        ) {
+                            AwesomeSwipeButton(tint: .green, systemImage: "checkmark") {
+                                toggleDone(item.id)
                             }
-                            .awesomeSwipeActions(
-                                id: item.id,
-                                coordinator: coordinator,
-                                edge: .trailing
-                            ) {
-                                AwesomeSwipeButton(
-                                    tint: .red,
-                                    role: .destructive,
-                                    systemImage: "trash"
-                                ) {
-                                    items.removeAll { $0.id == item.id }
-                                }
+                            AwesomeSwipeButton(tint: .orange, systemImage: "star.fill") {
+                                toggleFavorite(item.id)
                             }
+                        }
+                        .awesomeSwipeActions(
+                            id: item.id,
+                            coordinator: coordinator,
+                            edge: .trailing
+                        ) {
+                            AwesomeSwipeButton(
+                                tint: .red,
+                                role: .destructive,
+                                systemImage: "trash"
+                            ) {
+                                items.removeAll { $0.id == item.id }
+                            }
+                        }
                         Divider().padding(.leading, 68)
                     }
                 }
@@ -187,6 +215,14 @@ private struct BothEdgesDemo: View {
             .navigationTitle("Both Edges")
             .navigationBarTitleDisplayMode(.inline)
         }
+    }
+
+    private func toggleDone(_ id: Int) {
+        if doneIDs.contains(id) { doneIDs.remove(id) } else { doneIDs.insert(id) }
+    }
+
+    private func toggleFavorite(_ id: Int) {
+        if favoriteIDs.contains(id) { favoriteIDs.remove(id) } else { favoriteIDs.insert(id) }
     }
 }
 

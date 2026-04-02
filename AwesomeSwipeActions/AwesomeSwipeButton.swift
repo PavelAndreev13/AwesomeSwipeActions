@@ -39,6 +39,7 @@ public struct AwesomeSwipeButton<Label: View>: View {
     private let tint: Color
     private let action: () -> Void
     @ViewBuilder private let label: Label
+    @Environment(\.swipeCloseAction) private var closeAction
 
     // MARK: - Init
 
@@ -57,7 +58,10 @@ public struct AwesomeSwipeButton<Label: View>: View {
     // MARK: - Body
 
     public var body: some View {
-        Button(action: action) {
+        Button {
+            action()
+            closeAction?()
+        } label: {
             label
                 .font(.system(size: 16, weight: .medium))
                 .foregroundStyle(.white)

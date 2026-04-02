@@ -17,5 +17,8 @@ Icon
 .VolumeIcon.icns
 .com.apple.timemachine.donotpresent
 
+### Xcode
+xcuserdata/
+
 ### Swift Package Manager
 .swiftpm/

@@ -7,9 +7,13 @@ import SwiftUI
 /// ## How panel width is measured
 /// `SwipeActionsPanel` always lives in the ZStack (even when the row is closed)
 /// and reports its natural width via `SwipePanelWidthKey`. This allows the
-/// modifier to know the correct snap target before the user even starts swiping,
-/// with zero cost: when the row is closed the panel is fully covered by the
-/// content layer and receives no hit tests.
+/// modifier to know the correct snap target before the user even starts swiping.
+///
+/// ## How the panel stays hidden
+/// The panel is offset **outside** the row bounds and given `zIndex(1)` so it
+/// renders on top of the content — never behind it. The ZStack is clipped, so
+/// the panel is invisible until the content slides and brings it into view,
+/// exactly like the native `List` swipe actions.
 struct AwesomeSwipeModifier<ID: Hashable, ActionContent: View>: ViewModifier {
 
     // MARK: - Configuration (immutable, injected once)
@@ -48,16 +52,10 @@ struct AwesomeSwipeModifier<ID: Hashable, ActionContent: View>: ViewModifier {
 
         ZStack(alignment: alignment) {
 
-            // MARK: Action panel
-            // Always present so SwipePanelWidthKey is reported immediately on first render.
-            // When offset == 0 the panel is fully covered by the content layer above it
-            // and receives no hit tests — effectively free.
-            SwipeActionsPanel(content: actionContent, onActionTriggered: closeAnimated)
-                .allowsHitTesting(offset != 0)
-
             // MARK: Row content
             content
                 .offset(x: offset)
+                .zIndex(0)
                 // Capture row width once on appear
                 .background {
                     GeometryReader { geo in
@@ -76,7 +74,16 @@ struct AwesomeSwipeModifier<ID: Hashable, ActionContent: View>: ViewModifier {
                 }
                 .contentShape(Rectangle().offset(x: offset))
                 .gesture(swipeGesture)
+
+            // MARK: Action panel
+            // Positioned outside the row bounds via offset, slides in with the content.
+            // zIndex(1) keeps it above the content so semi-transparent rows are not an issue.
+            SwipeActionsPanel(content: actionContent, onActionTriggered: closeAnimated)
+                .offset(x: (edge == .trailing ? panelWidth : -panelWidth) + offset)
+                .zIndex(1)
+                .allowsHitTesting(offset != 0)
         }
+        .clipped()
         // Read the panel's natural width reported by SwipeActionsPanel
         .onPreferenceChange(SwipePanelWidthKey.self) { w in
             if w > 0 { panelWidth = w }

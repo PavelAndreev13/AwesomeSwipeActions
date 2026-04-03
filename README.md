@@ -215,6 +215,8 @@ The quickest way. Apply `.awesomeButtonStyle(tint:)` to any `Button` and it gets
     .awesomeButtonStyle(tint: .red)
 }
 ```
+![standart](https://github.com/user-attachments/assets/69945b60-4da8-4a3a-b494-2a023a4611f5)
+
 
 #### Option B — fully manual styling
 

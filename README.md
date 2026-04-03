@@ -173,6 +173,9 @@ ItemRow(item)
         AwesomeSwipeButton(tint: .green, systemImage: "checkmark") { markRead(item) }
     }
 ```
+![leading2](https://github.com/user-attachments/assets/3309fd44-783b-43d7-bd8d-91e39daccce2)
+
+
 
 ### Both edges on the same row
 

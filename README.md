@@ -161,6 +161,9 @@ ItemRow(item)
     }
 ```
 
+https://github.com/user-attachments/assets/9bd4b109-e850-43ac-a065-c9851f3c3221
+
+
 ### Leading edge
 
 Swipe **right** to reveal actions on the left side of the row:

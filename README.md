@@ -160,8 +160,7 @@ ItemRow(item)
         AwesomeSwipeButton(tint: .red, role: .destructive, systemImage: "trash") { delete(item) }
     }
 ```
-
-https://github.com/user-attachments/assets/9bd4b109-e850-43ac-a065-c9851f3c3221
+![leading](https://github.com/user-attachments/assets/d80304b2-3449-4702-a414-99980b1fa87d)
 
 
 ### Leading edge

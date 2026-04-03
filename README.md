@@ -190,6 +190,9 @@ ItemRow(item)
         AwesomeSwipeButton(tint: .red, role: .destructive, systemImage: "trash") { delete(item) }
     }
 ```
+![both](https://github.com/user-attachments/assets/e84b73be-643b-4ba5-994e-baf3efb2bc35)
+
+
 
 ### Using standard SwiftUI `Button`
 

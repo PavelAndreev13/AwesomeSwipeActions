@@ -1,0 +1,75 @@
+### macOS
+
+# Finder metadata
+.DS_Store
+._*
+
+# Custom folder icons
+Icon
+
+# Volume root files
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+### Xcode
+
+# Build products
+build/
+DerivedData/
+*.xcarchive
+*.dSYM
+*.dSYM.zip
+*.ipa
+
+# Per-user state
+xcuserdata/
+*.xcuserstate
+*.moved-aside
+*.hmap
+
+# Coverage / profiling
+*.profraw
+*.xccovreport
+*.xccovarchive
+
+### Swift Package Manager
+
+.build/
+.swiftpm/
+Package.resolved
+
+### CocoaPods
+
+Pods/
+
+### Carthage
+
+Carthage/Build/
+Carthage/Checkouts/
+
+### fastlane
+
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+### Editors / tooling
+
+# Claude Code session artifacts
+.claude/
+
+# JetBrains
+.idea/
+
+# VSCode
+.vscode/
+
+# Vim
+*.swp
+*.swo

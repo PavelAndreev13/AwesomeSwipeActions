@@ -1,6 +1,6 @@
 <div align="center">
+<img width="700" height="168" alt="asa-logo-horizontal-dark 1" src="https://github.com/user-attachments/assets/9e80dc0a-f7e0-4e55-8f14-ab09f1c75fbd" />
 
-<img width="2000" height="480" alt="asa-logo-horizontal-transparent" src="https://github.com/user-attachments/assets/14b9eec3-d73a-4bc3-98f9-27b3bd463b46" />
 
   <h1>AwesomeSwipeActions</h1>
 

@@ -50,6 +50,7 @@ fileprivate struct DemoRow: View {
     let item: PreviewItem
     var isDone: Bool = false
     var isFavorite: Bool = false
+    var backgroundColor = Color.white
 
     var body: some View {
         HStack(spacing: 12) {
@@ -78,7 +79,7 @@ fileprivate struct DemoRow: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .background(isFavorite ? Color.orange.opacity(0.5) : Color(.white))
+        .background(isFavorite ? Color.orange.opacity(0.5) : backgroundColor)
     }
 }
 
@@ -94,7 +95,7 @@ fileprivate struct TrailingEdgeDemo: View {
             ScrollView {
                 LazyVStack(spacing: 10) {
                     ForEach(items) { item in
-                        DemoRow(item: item)
+                        DemoRow(item: item, backgroundColor: .white.opacity(0.5))
                             .awesomeSwipeActions(
                                 id: item.id,
                                 coordinator: coordinator,
@@ -118,7 +119,7 @@ fileprivate struct TrailingEdgeDemo: View {
                 .background(.clear)
             }
             .padding(.horizontal, 20)
-            .background(Color(.systemGroupedBackground))
+            .background(Gradient(colors: [.purple, .black, .blue]))
             .navigationTitle("Trailing Edge")
             .navigationBarTitleDisplayMode(.inline)
         }
@@ -162,7 +163,7 @@ fileprivate struct LeadingEdgeDemo: View {
                 .background(.clear)
             }
             .padding(.horizontal, 20)
-            .background(.gray.opacity(0.9))
+            .background(Gradient(colors: [.purple, .black, .blue]))
             .navigationTitle("Leading Edge")
             .navigationBarTitleDisplayMode(.inline)
         }
@@ -192,7 +193,8 @@ fileprivate struct BothEdgesDemo: View {
                         DemoRow(
                             item: item,
                             isDone: doneIDs.contains(item.id),
-                            isFavorite: favoriteIDs.contains(item.id)
+                            isFavorite: favoriteIDs.contains(item.id),
+                            backgroundColor: .white.opacity(0.5)
                         )
                         .clipShape(RoundedRectangle(cornerRadius: 20))
                         .awesomeSwipeActions(
@@ -207,6 +209,7 @@ fileprivate struct BothEdgesDemo: View {
                                 toggleFavorite(item.id)
                             }
                         }
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
                         .awesomeSwipeActions(
                             id: item.id,
                             coordinator: coordinator,
@@ -220,13 +223,14 @@ fileprivate struct BothEdgesDemo: View {
                                 items.removeAll { $0.id == item.id }
                             }
                         }
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
                     
                     }
                 }
                 .background(.clear)
             }
             .padding(.horizontal, 20)
-            .background(Color(.systemGroupedBackground))
+            .background(Gradient(colors: [.purple, .black, .blue]))
             .navigationTitle("Both Edges")
             .navigationBarTitleDisplayMode(.inline)
         }

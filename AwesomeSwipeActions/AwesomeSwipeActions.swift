@@ -54,12 +54,12 @@ fileprivate struct DemoRow: View {
     var body: some View {
         HStack(spacing: 12) {
             RoundedRectangle(cornerRadius: 8)
-                .fill(Color.blue.opacity(0.15))
-                .frame(width: 40, height: 40)
+                .fill(Gradient(colors: [.purple, .blue]))
+                .frame(width: 40, height: 55)
                 .overlay {
                     Text("\(item.id + 1)")
                         .font(.headline)
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(.white)
                 }
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.title)
@@ -78,7 +78,7 @@ fileprivate struct DemoRow: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .background(isFavorite ? Color.orange.opacity(0.1) : Color(.systemBackground))
+        .background(isFavorite ? Color.orange.opacity(0.5) : Color(.white))
     }
 }
 
@@ -135,7 +135,7 @@ fileprivate struct LeadingEdgeDemo: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVStack(spacing: 5) {
+                LazyVStack(spacing: 15) {
                     
                     ForEach(items) { item in
                         DemoRow(
@@ -143,6 +143,7 @@ fileprivate struct LeadingEdgeDemo: View {
                             isDone: doneIDs.contains(item.id),
                             isFavorite: favoriteIDs.contains(item.id)
                         )
+                        
                         .awesomeSwipeActions(
                             id: item.id,
                             coordinator: coordinator,
@@ -161,7 +162,7 @@ fileprivate struct LeadingEdgeDemo: View {
                 .background(.clear)
             }
             .padding(.horizontal, 20)
-            .background(Color(.systemGroupedBackground))
+            .background(.gray.opacity(0.9))
             .navigationTitle("Leading Edge")
             .navigationBarTitleDisplayMode(.inline)
         }

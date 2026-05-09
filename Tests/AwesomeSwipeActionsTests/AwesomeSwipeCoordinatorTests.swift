@@ -1,3 +1,4 @@
+import SwiftUI
 import Testing
 @testable import AwesomeSwipeActions
 
@@ -110,5 +111,95 @@ struct AwesomeSwipeCoordinatorTests {
 
         #expect(coord.activeKey == nil)
         #expect(coord.openRowID == nil)
+    }
+
+    // MARK: - open(id:from:)
+
+    @Test("open(id:from:) publishes activeKey and openRowID")
+    func openProgrammatically() {
+        let coord = AwesomeSwipeCoordinator()
+        coord.open(id: "row-1", from: .trailing)
+
+        #expect(coord.openRowID == AnyHashable("row-1"))
+        #expect(coord.activeKey != nil)
+        // The activeKey is an internal SwipeEdgeKey wrapper, not the user id.
+        #expect(coord.activeKey != AnyHashable("row-1"))
+    }
+
+    @Test("open(id:from:) replaces the previously open row")
+    func openReplacesPrevious() {
+        let coord = AwesomeSwipeCoordinator()
+        coord.open(id: "row-1", from: .leading)
+        coord.open(id: "row-2", from: .top)
+
+        #expect(coord.openRowID == AnyHashable("row-2"))
+    }
+
+    @Test("Re-calling open(id:from:) with the same key is a no-op")
+    func openIsIdempotentForSameKey() {
+        let coord = AwesomeSwipeCoordinator()
+        coord.open(id: 7, from: .bottom)
+        let firstKey = coord.activeKey
+
+        coord.open(id: 7, from: .bottom)
+
+        #expect(coord.activeKey == firstKey)
+        #expect(coord.openRowID == AnyHashable(7))
+    }
+
+    @Test("Same id, different edges produce distinct activeKeys")
+    func sameIdDifferentEdgesAreDistinct() {
+        let coord = AwesomeSwipeCoordinator()
+        coord.open(id: "x", from: .leading)
+        let leadingKey = coord.activeKey
+
+        coord.open(id: "x", from: .trailing)
+        let trailingKey = coord.activeKey
+
+        #expect(leadingKey != trailingKey)
+        // The user id is the same in both cases
+        #expect(coord.openRowID == AnyHashable("x"))
+    }
+
+    @Test("close() resets state set up by open(id:from:)")
+    func closeAfterProgrammaticOpen() {
+        let coord = AwesomeSwipeCoordinator()
+        coord.open(id: "row-1", from: .top)
+        coord.close()
+
+        #expect(coord.activeKey == nil)
+        #expect(coord.openRowID == nil)
+    }
+}
+
+// MARK: - SwipeEdgeKey
+
+@Suite("SwipeEdgeKey")
+struct SwipeEdgeKeyTests {
+
+    @Test("Same id with each of the 4 edges produces 4 distinct hashes")
+    func fourEdgesAreDistinct() {
+        let id: AnyHashable = "row-42"
+        let keys: Set<SwipeEdgeKey> = [
+            SwipeEdgeKey(id: id, edge: .leading),
+            SwipeEdgeKey(id: id, edge: .trailing),
+            SwipeEdgeKey(id: id, edge: .top),
+            SwipeEdgeKey(id: id, edge: .bottom),
+        ]
+        #expect(keys.count == 4)
+    }
+
+    @Test("Same edge with different ids produces different keys")
+    func differentIdsAreDistinct() {
+        let a = SwipeEdgeKey(id: AnyHashable("a"), edge: .trailing)
+        let b = SwipeEdgeKey(id: AnyHashable("b"), edge: .trailing)
+        #expect(a != b)
+    }
+
+    @Test("Equality is reflexive on identical components")
+    func equalityIsReflexive() {
+        let a = SwipeEdgeKey(id: AnyHashable("a"), edge: .top)
+        let b = SwipeEdgeKey(id: AnyHashable("a"), edge: .top)
+        #expect(a == b)
     }
 }

@@ -42,16 +42,16 @@ import SwiftUI
 public final class AwesomeSwipeCoordinator: ObservableObject {
 
     /// Internal edge-aware key. Wraps the user-supplied id together with the
-    /// swipe edge so leading and trailing modifiers on the same row receive
-    /// distinct identities. Internal so consumers don't see implementation
-    /// details — they read ``openRowID`` instead.
+    /// swipe edge so leading/trailing/top/bottom modifiers on the same row
+    /// receive distinct identities. Internal so consumers don't see
+    /// implementation details — they read ``openRowID`` instead.
     @Published internal var activeKey: AnyHashable?
 
     /// The user-supplied identifier of the currently open row, or `nil` when
     /// no row is open.
     ///
     /// This is the value you originally passed as `id:` to
-    /// ``SwiftUI/View/awesomeSwipeActions(id:coordinator:edge:content:)``,
+    /// ``SwiftUI/View/awesomeSwipeActions(id:coordinator:from:content:)``,
     /// not an internal wrapper, so equality with your own ids works as expected:
     ///
     /// ```swift
@@ -105,6 +105,29 @@ public final class AwesomeSwipeCoordinator: ObservableObject {
         _close()
     }
 
+    /// Programmatically opens the row identified by `id` from the given edge.
+    ///
+    /// If another row is currently open it is closed first (the modifier's
+    /// `.onReceive(coordinator.$activeKey)` subscription animates the
+    /// transition). Useful for tests, tutorials, and onboarding highlights.
+    ///
+    /// ```swift
+    /// // Tutorial: peek the trash button on the first row
+    /// coordinator.open(id: items.first!.id, from: .trailing)
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - id: The same id you passed to `awesomeSwipeActions(id:...)`.
+    ///   - edge: The edge of the row to open from. Default: `.trailing`.
+    ///     Must match the `from:` value the modifier was created with.
+    public func open<ID: Hashable & Sendable>(id: ID, from edge: Edge = .trailing) {
+        let key = AnyHashable(SwipeEdgeKey(id: AnyHashable(id), edge: edge))
+        let userID = AnyHashable(id)
+        guard activeKey != key else { return }
+        activeKey = key
+        openRowID = userID
+    }
+
     /// Programmatically closes the open row, if any.
     ///
     /// - Note: Prefer ``close()``. This name is kept for source-compatibility
@@ -113,4 +136,17 @@ public final class AwesomeSwipeCoordinator: ObservableObject {
     public func closeAll() {
         close()
     }
+}
+
+// MARK: - Internal edge-aware key
+
+/// Combines the user-supplied row id with the swipe edge so that multiple
+/// modifiers on the same row (e.g. leading + trailing, or all four edges)
+/// receive distinct coordinator keys.
+///
+/// Lives at module-internal scope so both `AwesomeSwipeModifier` and
+/// `AwesomeSwipeCoordinator.open(id:from:)` can construct the same key shape.
+struct SwipeEdgeKey: Hashable {
+    let id: AnyHashable
+    let edge: Edge
 }

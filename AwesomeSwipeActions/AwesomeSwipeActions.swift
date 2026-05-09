@@ -6,8 +6,12 @@
 /// ## Public API
 /// - ``AwesomeSwipeCoordinator`` — coordinates open/close state across all rows
 /// - ``AwesomeSwipeButton``      — declares a single swipe action button
-/// - `SwiftUI.HorizontalEdge`    — `.leading` or `.trailing` (native SwiftUI type)
+/// - `SwiftUI.Edge`              — `.top` / `.leading` / `.bottom` / `.trailing`
 /// - `View.awesomeSwipeActions`  — the main modifier applied to each row
+///
+/// Both horizontal and vertical edges are supported. Horizontal edges work
+/// inside any container; vertical edges work best inside horizontal scroll
+/// views or non-scrolling layouts (see the *Choosing edges* DocC article).
 ///
 /// ## Usage with ScrollView + LazyVStack
 /// ```swift
@@ -99,7 +103,7 @@ fileprivate struct TrailingEdgeDemo: View {
                             .awesomeSwipeActions(
                                 id: item.id,
                                 coordinator: coordinator,
-                                edge: .trailing
+                                from: .trailing
                             ) {
                                 AwesomeSwipeButton(tint: .blue, systemImage: "pencil") {
                                     print("Edit \(item.title)")
@@ -148,7 +152,7 @@ fileprivate struct LeadingEdgeDemo: View {
                         .awesomeSwipeActions(
                             id: item.id,
                             coordinator: coordinator,
-                            edge: .leading
+                            from: .leading
                         ) {
                             AwesomeSwipeButton(tint: .green, systemImage: "checkmark") {
                                 toggleDone(item.id)
@@ -200,7 +204,7 @@ fileprivate struct BothEdgesDemo: View {
                         .awesomeSwipeActions(
                             id: item.id,
                             coordinator: coordinator,
-                            edge: .leading
+                            from: .leading
                         ) {
                             AwesomeSwipeButton(tint: .green, systemImage: "checkmark") {
                                 toggleDone(item.id)
@@ -213,7 +217,7 @@ fileprivate struct BothEdgesDemo: View {
                         .awesomeSwipeActions(
                             id: item.id,
                             coordinator: coordinator,
-                            edge: .trailing
+                            from: .trailing
                         ) {
                             AwesomeSwipeButton(
                                 tint: .red,
@@ -245,6 +249,83 @@ fileprivate struct BothEdgesDemo: View {
     }
 }
 
+/// Vertical edges demo: cards in a horizontal `ScrollView`, each revealing
+/// actions from `.top` (favourite) or `.bottom` (delete). Putting the swipe
+/// axis perpendicular to the scroll axis is the conflict-free way to use
+/// vertical edges.
+fileprivate struct VerticalEdgesDemo: View {
+    @State private var coordinator = AwesomeSwipeCoordinator()
+    @State private var items = mockItems
+
+    var body: some View {
+        NavigationStack {
+            ScrollView(.horizontal) {
+                LazyHStack(spacing: 12) {
+                    ForEach(items) { item in
+                        VerticalCard(item: item)
+                            .frame(width: 160, height: 220)
+                            .awesomeSwipeActions(
+                                for: item,
+                                coordinator: coordinator,
+                                from: .top
+                            ) {
+                                AwesomeSwipeButton(tint: .orange, systemImage: "star.fill") {
+                                    print("Favourite \(item.title)")
+                                }
+                            }
+                            .awesomeSwipeActions(
+                                for: item,
+                                coordinator: coordinator,
+                                from: .bottom
+                            ) {
+                                AwesomeSwipeButton(
+                                    tint: .red,
+                                    role: .destructive,
+                                    systemImage: "trash"
+                                ) {
+                                    items.removeAll { $0.id == item.id }
+                                }
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+            .background(Color(.systemGroupedBackground))
+            .navigationTitle("Vertical Edges")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+}
+
+/// A vertical card layout used by `VerticalEdgesDemo`.
+fileprivate struct VerticalCard: View {
+    let item: PreviewItem
+
+    var body: some View {
+        VStack(spacing: 8) {
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.blue.opacity(0.15))
+                .overlay {
+                    Text("\(item.id + 1)")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.blue)
+                }
+                .frame(height: 100)
+            Text(item.title)
+                .font(.headline)
+            Text("Swipe up or down")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity)
+        .background(Color(.systemBackground))
+    }
+}
+
 // MARK: PreviewProvider
 
 /// Standard SwiftUI Button demo — shows that .tint() + .frame() is all that's needed.
@@ -261,7 +342,7 @@ fileprivate struct StandardButtonDemo: View {
                             .awesomeSwipeActions(
                                 id: item.id,
                                 coordinator: coordinator,
-                                edge: .trailing
+                                from: .trailing
                             ) {
                                 // Standard SwiftUI Button — no AwesomeSwipeButton needed
                                 Button { print("Archive \(item.title)") } label: {
@@ -305,6 +386,8 @@ struct AwesomeSwipeActions_Previews: PreviewProvider {
             .previewDisplayName("Leading — Done & Star")
         BothEdgesDemo()
             .previewDisplayName("Both Edges")
+        VerticalEdgesDemo()
+            .previewDisplayName("Vertical — Top & Bottom")
         StandardButtonDemo()
             .previewDisplayName("Standard SwiftUI Button")
     }

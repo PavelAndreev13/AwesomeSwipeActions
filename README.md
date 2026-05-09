@@ -51,12 +51,15 @@ ScrollView {
   - [Trailing edge](#trailing-edge-default)
   - [Leading edge](#leading-edge)
   - [Both edges on the same row](#both-edges-on-the-same-row)
+  - [Vertical edges (top / bottom)](#vertical-edges-top--bottom)
   - [Using a standard SwiftUI Button](#using-a-standard-swiftui-button)
-  - [Programmatic close](#programmatic-close)
+  - [Programmatic open & close](#programmatic-open--close)
   - [Observing the open row](#observing-the-open-row)
 - [Accessibility](#accessibility)
+- [Reduced motion](#reduced-motion)
 - [API Reference](#api-reference)
 - [How It Works](#how-it-works)
+- [Migration from v1.x](#migration-from-v1x)
 - [License](#license)
 
 ---
@@ -85,24 +88,28 @@ ScrollView {
 | `ScrollView` + `LazyHStack` | ❌ | ✅ |
 | Custom spacing & separators | ❌ | ✅ |
 | Leading & trailing edges | ✅ | ✅ |
+| **Top & bottom edges (vertical swipe)** | ❌ | ✅ |
 | Rubber-band & velocity snap | ❌ | ✅ |
-| Programmatic close | ❌ | ✅ |
+| Programmatic open & close | ❌ | ✅ |
 | Observe the open row | ❌ | ✅ |
 | O(1) re-renders on large lists | ❌ | ✅ |
 | VoiceOver rotor actions | ✅ | ✅ |
+| Honors Reduced Motion | partial | ✅ |
 
 ---
 
 ## Features
 
-- 🎯 **Drop-in API** — `awesomeSwipeActions` mirrors the signature of native `swipeActions`, including the `edge:` parameter (`HorizontalEdge`).
-- 🪶 **Pure SwiftUI** — no `UIKit` or `AppKit` interop, no UIViewRepresentable; works on iOS, macOS, and visionOS.
+- 🎯 **Drop-in API** — `awesomeSwipeActions(from: Edge)` reads like native `swipeActions(edge:)` and accepts the same SwiftUI `Edge` cases you already use elsewhere (`.transition(.move(edge:))`, `.safeAreaInset(edge:)`, …).
+- ↔️ **Four edges** — `.leading` / `.trailing` for horizontal swipes, `.top` / `.bottom` for vertical swipes.
+- 🪶 **Pure SwiftUI** — no `UIKit` or `AppKit` interop, no `UIViewRepresentable`; works on iOS, macOS, and visionOS.
 - ⚡ **O(1) re-renders** — only the opening and closing rows update; the rest of the list is untouched, even with thousands of rows.
 - 🌊 **Native physics** — rubber-band past the panel boundary and velocity-based snap, identical to the system feel.
-- 🎚 **Both edges** — leading and trailing actions can coexist on the same row.
+- 🎚 **Multiple edges per row** — leading + trailing + top + bottom can coexist on the same row.
 - 🎨 **Flexible buttons** — use the convenience `AwesomeSwipeButton`, or any standard SwiftUI `Button` with `.tint(_:)`.
 - ♿ **VoiceOver-ready** — actions are exposed as `accessibilityActions`, matching the rotor behaviour of native `swipeActions`.
-- 🔄 **Reactive** — observe `coordinator.openRowID` to react when a row opens or closes.
+- 🤏 **Reduced Motion** — replaces spring physics with a short linear curve when the system flag is on.
+- 🔄 **Reactive** — observe `coordinator.openRowID` and call `coordinator.open(id:from:)` from anywhere.
 - 🛡 **Strict-concurrency clean** — `AwesomeSwipeCoordinator` is `@MainActor`-isolated; the package builds with the strict-concurrency upcoming feature enabled.
 
 ---
@@ -116,6 +123,7 @@ ScrollView {
 | visionOS | 1.0 |
 | Swift | 5.9 |
 | Xcode | 15.0 |
+| Library version | **2.0.0** |
 
 ---
 
@@ -130,14 +138,14 @@ ScrollView {
    ```
    https://github.com/PavelAndreev13/AwesomeSwipeActions
    ```
-3. Choose **Up to Next Major Version** starting at `1.0.0`.
+3. Choose **Up to Next Major Version** starting at `2.0.0`.
 4. Click **Add Package**.
 
 #### In `Package.swift`
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/PavelAndreev13/AwesomeSwipeActions", from: "1.0.0")
+    .package(url: "https://github.com/PavelAndreev13/AwesomeSwipeActions", from: "2.0.0")
 ],
 targets: [
     .target(
@@ -209,7 +217,7 @@ Swipe **right** to reveal actions on the left side of the row:
 
 ```swift
 ItemRow(item)
-    .awesomeSwipeActions(for: item, coordinator: coordinator, edge: .leading) {
+    .awesomeSwipeActions(for: item, coordinator: coordinator, from: .leading) {
         AwesomeSwipeButton(tint: .green, systemImage: "checkmark") { markRead(item) }
     }
 ```
@@ -222,15 +230,48 @@ Apply the modifier twice with different edges — the same `coordinator` will ke
 
 ```swift
 ItemRow(item)
-    .awesomeSwipeActions(for: item, coordinator: coordinator, edge: .leading) {
+    .awesomeSwipeActions(for: item, coordinator: coordinator, from: .leading) {
         AwesomeSwipeButton(tint: .green, systemImage: "checkmark") { markRead(item) }
     }
-    .awesomeSwipeActions(for: item, coordinator: coordinator, edge: .trailing) {
+    .awesomeSwipeActions(for: item, coordinator: coordinator, from: .trailing) {
         AwesomeSwipeButton(tint: .red, role: .destructive, systemImage: "trash") { delete(item) }
     }
 ```
 
 ![both edges](https://github.com/user-attachments/assets/e84b73be-643b-4ba5-994e-baf3efb2bc35)
+
+### Vertical edges (top / bottom)
+
+Swipe **up** or **down** on a card to reveal actions from the `.bottom` or `.top` edges. Vertical swipes shine on cards inside a horizontal scroll view, where the swipe axis is perpendicular to the scroll axis:
+
+```swift
+ScrollView(.horizontal) {
+    LazyHStack(spacing: 12) {
+        ForEach(items) { item in
+            Card(item: item)
+                .awesomeSwipeActions(for: item, coordinator: coordinator, from: .top) {
+                    AwesomeSwipeButton(tint: .orange, systemImage: "star.fill") {
+                        favourite(item)
+                    }
+                }
+                .awesomeSwipeActions(for: item, coordinator: coordinator, from: .bottom) {
+                    AwesomeSwipeButton(tint: .red, role: .destructive, systemImage: "trash") {
+                        delete(item)
+                    }
+                }
+        }
+    }
+}
+```
+
+> **⚠️ Axis-conflict caveat.** A vertical swipe inside a vertical `ScrollView` shares the gesture axis with the scroll view, and one of them will lose. Use the table below to pick a safe combination:
+>
+> | | scroll axis: vertical | scroll axis: horizontal | non-scrolling |
+> |---|---|---|---|
+> | `.leading` / `.trailing` | ✅ | ⚠️ conflict | ✅ |
+> | `.top` / `.bottom` | ⚠️ conflict | ✅ | ✅ |
+>
+> When the swipe axis is perpendicular to (or unrelated to) the scroll axis, gesture coordination is automatic via the built-in 50° angle filter. When they coincide, treat the combination as unsupported.
 
 ### Using a standard SwiftUI Button
 
@@ -271,9 +312,9 @@ ItemRow(item)
 
 > **Note:** Always set `.tint(_:)` explicitly — the background colour is derived from the tint, not from `Button(role:)`.
 
-### Programmatic close
+### Programmatic open & close
 
-Close the open row from anywhere — for example after an async action completes:
+**Close** the open row from anywhere — for example after an async action completes:
 
 ```swift
 Button("Delete selected") {
@@ -282,6 +323,13 @@ Button("Delete selected") {
         coordinator.close()
     }
 }
+```
+
+**Open** a specific row programmatically — useful for tutorials, onboarding peeks, and tests:
+
+```swift
+// Hint: peek the trash button on the first row
+coordinator.open(id: items.first!.id, from: .trailing)
 ```
 
 ### Observing the open row
@@ -312,15 +360,21 @@ This works automatically — there's no extra modifier to add. The buttons you p
 
 ---
 
+## Reduced motion
+
+When the user has **Reduce Motion** enabled in System Settings → Accessibility → Motion, the spring snap animation is automatically replaced with a short linear curve (`linear(duration: 0.15)`). Buttons stay tappable and the rubber-band physics still apply during the gesture itself; only the snap-open / snap-close transitions are simplified. No additional configuration is required.
+
+---
+
 ## API Reference
 
-### `awesomeSwipeActions(id:coordinator:edge:content:)`
+### `awesomeSwipeActions(id:coordinator:from:content:)`
 
 ```swift
 func awesomeSwipeActions<ID: Hashable & Sendable, ActionContent: View>(
     id: ID,
     coordinator: AwesomeSwipeCoordinator,
-    edge: HorizontalEdge = .trailing,
+    from edge: Edge = .trailing,
     @ViewBuilder content: () -> ActionContent
 ) -> some View
 ```
@@ -329,10 +383,10 @@ func awesomeSwipeActions<ID: Hashable & Sendable, ActionContent: View>(
 |---|---|
 | `id` | A unique identifier for the row, used to coordinate open/close state. |
 | `coordinator` | A shared `AwesomeSwipeCoordinator` instance created with `@State`. |
-| `edge` | The `HorizontalEdge` from which actions slide in. Default: `.trailing`. |
+| `from` | The `Edge` from which actions slide in. Default: `.trailing`. Accepts `.top`, `.leading`, `.bottom`, `.trailing`. |
 | `content` | A `@ViewBuilder` closure containing the action buttons. |
 
-### `awesomeSwipeActions(for:coordinator:edge:content:)`
+### `awesomeSwipeActions(for:coordinator:from:content:)`
 
 Convenience overload for `Identifiable` data — uses `item.id` automatically.
 
@@ -340,7 +394,7 @@ Convenience overload for `Identifiable` data — uses `item.id` automatically.
 func awesomeSwipeActions<Item: Identifiable, ActionContent: View>(
     for item: Item,
     coordinator: AwesomeSwipeCoordinator,
-    edge: HorizontalEdge = .trailing,
+    from edge: Edge = .trailing,
     @ViewBuilder content: () -> ActionContent
 ) -> some View where Item.ID: Hashable & Sendable
 ```
@@ -357,6 +411,7 @@ func awesomeSwipeActions<Item: Identifiable, ActionContent: View>(
 |---|---|
 | `openRowID: AnyHashable?` | Published. The user-supplied id of the currently open row (`nil` when all closed). Comparable with your own ids. |
 | `close()` | Programmatically closes the open row, if any. |
+| `open(id:from:)` | Programmatically opens a specific row from a given edge. Closes whatever row was open before. |
 
 ### `AwesomeSwipeButton`
 
@@ -393,16 +448,18 @@ Applies the standard `AwesomeSwipeActions` button appearance to any SwiftUI `But
 func awesomeButtonStyle(tint: Color) -> some View
 ```
 
-Sets a fixed width of `74 pt`, `maxHeight: .infinity`, white foreground, medium font weight, and a press-opacity feedback — identical to `AwesomeSwipeButton`.
+Sets a fixed cross-axis size of `74 pt`, white foreground, medium font weight, and a press-opacity feedback — identical to `AwesomeSwipeButton`. The fixed dimension is `width` inside a horizontal panel (leading/trailing) and `height` inside a vertical panel (top/bottom); axis is read from the environment automatically.
 
-### `HorizontalEdge`
+### `Edge`
 
-The `edge:` parameter accepts SwiftUI's native [`HorizontalEdge`](https://developer.apple.com/documentation/swiftui/horizontaledge):
+The `from:` parameter accepts SwiftUI's native [`Edge`](https://developer.apple.com/documentation/swiftui/edge):
 
 ```swift
-public enum HorizontalEdge {
+public enum Edge {
+    case top       // swipe down → actions appear at the top
     case leading   // swipe right → actions appear on the left
-    case trailing  // swipe left  → actions appear on the right (default)
+    case bottom    // swipe up   → actions appear at the bottom
+    case trailing  // swipe left → actions appear on the right (default)
 }
 ```
 
@@ -433,6 +490,23 @@ This produces progressively increasing resistance identical to the native feel.
 ### Concurrency
 
 `AwesomeSwipeCoordinator` is annotated `@MainActor` so all state mutations happen on the main thread. The package builds cleanly with `.enableUpcomingFeature("StrictConcurrency")` enabled.
+
+---
+
+## Migration from v1.x
+
+Version 2.0 renames the `edge:` parameter to `from:` and changes its type from `HorizontalEdge` to SwiftUI's four-case `Edge`. For most call sites it's a single-token edit:
+
+```diff
+- .awesomeSwipeActions(for: item, coordinator: coord, edge: .leading) { … }
++ .awesomeSwipeActions(for: item, coordinator: coord, from: .leading) { … }
+```
+
+Calls that omitted `edge:` (relying on the default `.trailing`) compile unchanged.
+
+If you upgrade without renaming, the v1 overloads are kept as `@available(*, deprecated)` bridges and Xcode offers a one-tap fix-it. Both overloads will be removed in v3.
+
+`closeAll()` was renamed to `close()` in v1 and remains as a deprecated alias; use `close()`.
 
 ---
 

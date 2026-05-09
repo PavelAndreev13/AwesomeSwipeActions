@@ -1,10 +1,11 @@
 import SwiftUI
 
-/// A pre-styled button designed for use inside ``SwiftUI/View/awesomeSwipeActions(id:coordinator:edge:content:)``.
+/// A pre-styled button designed for use inside ``SwiftUI/View/awesomeSwipeActions(id:coordinator:from:content:)``.
 ///
-/// `AwesomeSwipeButton` is simply a `Button` with a fixed width, white
-/// foreground, and a tinted background. It's a convenience — any standard
-/// SwiftUI `Button` with `.tint(_:)` works just as well:
+/// `AwesomeSwipeButton` is simply a `Button` with a fixed cross-axis size
+/// (74 pt by default), white foreground, and a tinted background. It's a
+/// convenience — any standard SwiftUI `Button` with `.tint(_:)` works just
+/// as well:
 ///
 /// ```swift
 /// // Option A — convenience wrapper (recommended)
@@ -24,6 +25,11 @@ import SwiftUI
 /// }
 /// ```
 ///
+/// The button reads the swipe axis from the environment (`\.swipeAxis`) and
+/// chooses its fixed dimension automatically — width for horizontal panels,
+/// height for vertical panels. Outside a swipe panel, the default is
+/// horizontal sizing.
+///
 /// - Note: When using a plain `Button`, add `.tint(color)` so the underlying
 ///   button style can pick up the right background colour. For
 ///   `role: .destructive` you also need `.tint(.red)` explicitly, since
@@ -34,6 +40,9 @@ public struct AwesomeSwipeButton<Label: View>: View {
     private let action: () -> Void
     @ViewBuilder private let label: Label
     @Environment(\.swipeCloseAction) private var closeAction
+    @Environment(\.swipeAxis) private var axis
+
+    private let crossSize: CGFloat = 74
 
     // MARK: - Init
 
@@ -68,8 +77,10 @@ public struct AwesomeSwipeButton<Label: View>: View {
             label
                 .font(.system(size: 16, weight: .medium))
                 .foregroundStyle(.white)
-                .frame(width: 74)
-                .frame(maxHeight: .infinity)
+                .frame(width: axis == .horizontal ? crossSize : nil,
+                       height: axis == .vertical ? crossSize : nil)
+                .frame(maxWidth: axis == .vertical ? .infinity : nil,
+                       maxHeight: axis == .horizontal ? .infinity : nil)
         }
         .tint(tint)
     }
@@ -120,13 +131,18 @@ private struct _AwesomeExplicitButton: View {
     let configuration: ButtonStyleConfiguration
     let tint: Color
     @Environment(\.swipeCloseAction) private var closeAction
+    @Environment(\.swipeAxis) private var axis
+
+    private let crossSize: CGFloat = 74
 
     var body: some View {
         configuration.label
             .font(.system(size: 16, weight: .medium))
             .foregroundStyle(.white)
-            .frame(width: 74)
-            .frame(maxHeight: .infinity)
+            .frame(width: axis == .horizontal ? crossSize : nil,
+                   height: axis == .vertical ? crossSize : nil)
+            .frame(maxWidth: axis == .vertical ? .infinity : nil,
+                   maxHeight: axis == .horizontal ? .infinity : nil)
             .background(tint)
             .opacity(configuration.isPressed ? 0.75 : 1)
             .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
@@ -156,9 +172,10 @@ extension View {
     /// }
     /// ```
     ///
-    /// Sets a fixed width of `74 pt`, `maxHeight: .infinity`, white foreground,
-    /// medium font weight, and press-opacity feedback — identical to
-    /// ``AwesomeSwipeButton``.
+    /// Sets a fixed cross-axis size of `74 pt`, white foreground, medium font
+    /// weight, and press-opacity feedback — identical to ``AwesomeSwipeButton``.
+    /// The fixed dimension is `width` inside a horizontal panel and `height`
+    /// inside a vertical panel (axis is read from `\.swipeAxis`).
     ///
     /// - Parameter tint: The background colour applied to the button.
     /// - Returns: A view that styles the button to match the swipe-action

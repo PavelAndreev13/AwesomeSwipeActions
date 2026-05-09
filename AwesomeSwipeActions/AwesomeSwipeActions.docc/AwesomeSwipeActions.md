@@ -11,12 +11,13 @@ SwiftUI's built-in `swipeActions` modifier is tied exclusively to `List`. The mo
 ### Key features
 
 - **Works where `swipeActions` doesn't** — `ScrollView + LazyVStack`, `ScrollView + LazyHStack`, custom containers
-- **Familiar API** — `.awesomeSwipeActions` mirrors the signature of `.swipeActions` exactly
-- **Leading & trailing edges** — reveal actions by swiping right or left, independently per row
+- **Four edges** — `.leading`, `.trailing`, `.top`, `.bottom` via the `from: Edge` parameter
 - **Standard `Button` support** — use `AwesomeSwipeButton` for convenience, or any SwiftUI `Button` with `.tint()`
 - **O(1) re-renders** — only the opening and closing rows re-render; the rest of the scroll view is untouched
-- **Scroll-safe gestures** — horizontal angle filtering prevents any interference with vertical scrolling
+- **Scroll-safe gestures** — angle filtering prevents interference with the enclosing scroll view (perpendicular axes only)
 - **Native physics** — rubber-banding past the action panel and velocity-based snap
+- **Programmatic open & close** via the coordinator
+- **Reduced Motion** — spring snaps replaced with linear curves automatically
 
 ### Why not just use swipeActions?
 
@@ -41,9 +42,11 @@ ScrollView {                       // ← swipeActions does NOT work here
 | `ScrollView + LazyVStack` | ❌ | ✅ |
 | `ScrollView + LazyHStack` | ❌ | ✅ |
 | Custom spacing & separators | ❌ | ✅ |
-| Leading & trailing edge | ✅ | ✅ |
+| Leading & trailing edges | ✅ | ✅ |
+| Top & bottom edges (vertical swipe) | ❌ | ✅ |
 | Rubber-band & velocity snap | ❌ | ✅ |
-| Programmatic close | ❌ | ✅ |
+| Programmatic open & close | ❌ | ✅ |
+| Honors Reduced Motion | partial | ✅ |
 
 ---
 
@@ -84,7 +87,7 @@ ScrollView {
 `AwesomeSwipeButton` is a convenience wrapper. Any SwiftUI `Button` with a `.tint()` modifier works inside the closure:
 
 ```swift
-.awesomeSwipeActions(id: item.id, coordinator: swipeCoordinator, edge: .leading) {
+.awesomeSwipeActions(id: item.id, coordinator: swipeCoordinator, from: .leading) {
     Button { archive(item) } label: {
         Label("Archive", systemImage: "archivebox")
             .frame(width: 74)
@@ -104,23 +107,41 @@ Apply the modifier twice with different edges:
 
 ```swift
 MessageRow(message: message)
-    .awesomeSwipeActions(id: message.id, coordinator: swipeCoordinator, edge: .leading) {
+    .awesomeSwipeActions(id: message.id, coordinator: swipeCoordinator, from: .leading) {
         AwesomeSwipeButton(tint: .green, systemImage: "checkmark") { markRead(message) }
     }
-    .awesomeSwipeActions(id: message.id, coordinator: swipeCoordinator, edge: .trailing) {
+    .awesomeSwipeActions(id: message.id, coordinator: swipeCoordinator, from: .trailing) {
         AwesomeSwipeButton(tint: .red, role: .destructive, systemImage: "trash") { delete(message) }
     }
 ```
 
-### Programmatic close
+### Programmatic open & close
 
-Close the currently open row from anywhere — for example after a network request completes:
+**Close** the currently open row from anywhere — for example after a network request completes:
 
 ```swift
 Task {
     try await performAction()
-    swipeCoordinator.closeAll()
+    swipeCoordinator.close()
 }
+```
+
+**Open** any row from any edge programmatically — useful for tutorials and tests:
+
+```swift
+swipeCoordinator.open(id: messages.first!.id, from: .trailing)
+```
+
+### Vertical swipe (top / bottom)
+
+Vertical edges work the same way as horizontal ones, but care is needed about
+the enclosing scroll view's axis — see <doc:Choosing-Edges>.
+
+```swift
+Card(item: item)
+    .awesomeSwipeActions(for: item, coordinator: swipeCoordinator, from: .top) {
+        AwesomeSwipeButton(tint: .orange, systemImage: "star.fill") { favourite(item) }
+    }
 ```
 
 ---
@@ -134,4 +155,7 @@ Task {
 ### Declaring Actions
 
 - ``AwesomeSwipeButton``
-- ``SwipeActionEdge``
+
+### Articles
+
+- <doc:Choosing-Edges>

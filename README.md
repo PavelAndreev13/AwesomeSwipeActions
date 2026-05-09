@@ -52,6 +52,7 @@ ScrollView {
   - [Leading edge](#leading-edge)
   - [Both edges on the same row](#both-edges-on-the-same-row)
   - [Vertical edges (top / bottom)](#vertical-edges-top--bottom)
+  - [Rounded corners](#rounded-corners)
   - [Using a standard SwiftUI Button](#using-a-standard-swiftui-button)
   - [Programmatic open & close](#programmatic-open--close)
   - [Observing the open row](#observing-the-open-row)
@@ -123,7 +124,7 @@ ScrollView {
 | visionOS | 1.0 |
 | Swift | 5.9 |
 | Xcode | 15.0 |
-| Library version | **2.0.0** |
+| Library version | **2.1.0** |
 
 ---
 
@@ -145,7 +146,7 @@ ScrollView {
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/PavelAndreev13/AwesomeSwipeActions", from: "2.0.0")
+    .package(url: "https://github.com/PavelAndreev13/AwesomeSwipeActions", from: "2.1.0")
 ],
 targets: [
     .target(
@@ -272,6 +273,38 @@ ScrollView(.horizontal) {
 > | `.top` / `.bottom` | ⚠️ conflict | ✅ | ✅ |
 >
 > When the swipe axis is perpendicular to (or unrelated to) the scroll axis, gesture coordination is automatic via the built-in 50° angle filter. When they coincide, treat the combination as unsupported.
+
+### Rounded corners
+
+Pass `cornerRadius:` to `AwesomeSwipeButton` (or to `awesomeButtonStyle(tint:cornerRadius:)`) for rounded action buttons. Default is `0` — square corners, matching the system look.
+
+```swift
+ItemRow(item)
+    .awesomeSwipeActions(for: item, coordinator: coordinator) {
+        AwesomeSwipeButton(tint: .blue, cornerRadius: 12, systemImage: "pencil") { edit(item) }
+        AwesomeSwipeButton(tint: .red, role: .destructive, cornerRadius: 12, systemImage: "trash") { delete(item) }
+    }
+    .clipShape(RoundedRectangle(cornerRadius: 12))   // also round the row's own corners
+```
+
+For pill-shaped buttons with visible gaps between them, use a large `cornerRadius` and add padding inside the `label:` builder:
+
+```swift
+AwesomeSwipeButton(tint: .orange, cornerRadius: 999) {
+    star(item)
+} label: {
+    Image(systemName: "star.fill").padding(8)
+}
+```
+
+The same `cornerRadius:` knob exists on `awesomeButtonStyle(tint:cornerRadius:)` for plain `Button` use:
+
+```swift
+Button { delete(item) } label: {
+    Label("Delete", systemImage: "trash")
+}
+.awesomeButtonStyle(tint: .red, cornerRadius: 12)
+```
 
 ### Using a standard SwiftUI Button
 
@@ -424,6 +457,14 @@ AwesomeSwipeButton(tint: .blue, systemImage: "pencil") { edit() }
 // Destructive style (overrides the tint with red)
 AwesomeSwipeButton(tint: .red, role: .destructive, systemImage: "trash") { delete() }
 
+// Rounded corners
+AwesomeSwipeButton(tint: .blue, cornerRadius: 12, systemImage: "pencil") { edit() }
+
+// Pill (use a large radius + label padding so adjacent buttons get visible gaps)
+AwesomeSwipeButton(tint: .orange, cornerRadius: 999) { star() } label: {
+    Image(systemName: "star.fill").padding(8)
+}
+
 // Custom label
 AwesomeSwipeButton(tint: .purple, action: { pin() }) {
     VStack(spacing: 4) {
@@ -437,18 +478,25 @@ AwesomeSwipeButton(tint: .purple, action: { pin() }) {
 |---|---|
 | `tint` | Background colour of the button. Default: `.gray`. |
 | `role` | When `.destructive`, the tint is overridden with `.red`. |
+| `cornerRadius` | Radius applied to all four corners of the button's background and content. Default: `0` (square corners, matches the system swipe-actions look). |
 | `systemImage` | An SF Symbol name (convenience initialiser). |
 | `action` | Closure invoked when the button is tapped. |
 
-### `awesomeButtonStyle(tint:)`
+> **Pill tip:** stacked rounded buttons in the same panel sit edge-to-edge by
+> default (no gap between them), so adjacent corners trim each other. Add
+> `.padding(_:)` inside the `label:` builder to introduce visible gaps and
+> get capsule-style buttons.
+
+### `awesomeButtonStyle(tint:)` / `awesomeButtonStyle(tint:cornerRadius:)`
 
 Applies the standard `AwesomeSwipeActions` button appearance to any SwiftUI `Button`. An alternative to `AwesomeSwipeButton` when you prefer plain `Button` ergonomics.
 
 ```swift
 func awesomeButtonStyle(tint: Color) -> some View
+func awesomeButtonStyle(tint: Color, cornerRadius: CGFloat) -> some View
 ```
 
-Sets a fixed cross-axis size of `74 pt`, white foreground, medium font weight, and a press-opacity feedback — identical to `AwesomeSwipeButton`. The fixed dimension is `width` inside a horizontal panel (leading/trailing) and `height` inside a vertical panel (top/bottom); axis is read from the environment automatically.
+Sets a fixed cross-axis size of `74 pt`, white foreground, medium font weight, and a press-opacity feedback — identical to `AwesomeSwipeButton`. The fixed dimension is `width` inside a horizontal panel (leading/trailing) and `height` inside a vertical panel (top/bottom); axis is read from the environment automatically. Pass `cornerRadius:` to round the button's corners.
 
 ### `Edge`
 

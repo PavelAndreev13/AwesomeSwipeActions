@@ -115,6 +115,25 @@ MessageRow(message: message)
     }
 ```
 
+### Rounded corners
+
+Pass `cornerRadius:` to ``AwesomeSwipeButton`` (or to the
+`awesomeButtonStyle(tint:cornerRadius:)` overload) for rounded action
+buttons. Default is `0` — square corners, matching the system look.
+
+```swift
+AwesomeSwipeButton(tint: .blue, cornerRadius: 12, systemImage: "pencil") { … }
+```
+
+For pill-shaped buttons with visible gaps between them, use a large
+radius and add padding inside the `label:` builder:
+
+```swift
+AwesomeSwipeButton(tint: .orange, cornerRadius: 999) { … } label: {
+    Image(systemName: "star.fill").padding(8)
+}
+```
+
 ### Programmatic open & close
 
 **Close** the currently open row from anywhere — for example after a network request completes:

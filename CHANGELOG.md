@@ -5,6 +5,43 @@ All notable changes to **AwesomeSwipeActions** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] — 2026-05-09
+
+### Added
+
+- **`cornerRadius:` parameter on `AwesomeSwipeButton`.** Both initialisers
+  (custom `label:` and `systemImage:` convenience) gain a
+  `cornerRadius: CGFloat = 0` argument that rounds the button's tinted
+  background. Default `0` preserves the v2.0 look (square corners, matching
+  native swipe-actions).
+  ```swift
+  AwesomeSwipeButton(tint: .blue, cornerRadius: 12, systemImage: "pencil") { … }
+  ```
+- **`awesomeButtonStyle(tint:cornerRadius:)` overload** for plain SwiftUI
+  `Button`s. The single-argument `awesomeButtonStyle(tint:)` is unchanged
+  and stays the simplest form.
+  ```swift
+  Button { delete() } label: { Label("Delete", systemImage: "trash") }
+      .awesomeButtonStyle(tint: .red, cornerRadius: 12)
+  ```
+- **Three new preview demos** in the package previews:
+  - `RoundedButtonsDemo` — squared-but-rounded buttons inside rounded rows.
+  - `PillButtonsDemo` — large `cornerRadius` plus label padding produces
+    capsule-style buttons with visible gaps.
+  - `PlainViewsDemo` — `awesomeSwipeActions` applied to a plain `HStack`
+    of `Text` + `Image`, no custom row type required.
+
+### Changed
+
+- README and DocC documentation updated with a new *Rounded corners* usage
+  section, the new `cornerRadius:` parameter row in the API reference, and
+  pill-button guidance.
+
+### Notes
+
+- Fully backward-compatible: existing 2.0.x callers compile unchanged
+  (`cornerRadius` defaults to `0`).
+
 ## [2.0.0] — 2026-05-09
 
 ### Added
@@ -114,5 +151,6 @@ Initial public release.
   compatibility with pre-1.0 betas; it will be removed in a future major
   version.
 
+[2.1.0]: https://github.com/PavelAndreev13/AwesomeSwipeActions/releases/tag/2.1.0
 [2.0.0]: https://github.com/PavelAndreev13/AwesomeSwipeActions/releases/tag/2.0.0
 [1.0.0]: https://github.com/PavelAndreev13/AwesomeSwipeActions/releases/tag/1.0.0

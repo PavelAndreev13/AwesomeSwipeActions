@@ -30,6 +30,20 @@ import SwiftUI
 /// height for vertical panels. Outside a swipe panel, the default is
 /// horizontal sizing.
 ///
+/// ## Rounded corners
+///
+/// Pass `cornerRadius:` to round the button's corners. Default is `0`
+/// (square corners, matches the system swipe-actions look):
+///
+/// ```swift
+/// AwesomeSwipeButton(tint: .blue, cornerRadius: 12, systemImage: "pencil") { edit() }
+/// ```
+///
+/// > Tip: when stacking multiple rounded buttons in the same panel they
+/// > sit edge-to-edge, so adjacent corners "trim" each other. Add visual
+/// > padding around each label (e.g. `.padding(4)` inside the `label:`
+/// > builder) to get pill-shaped buttons with visible gaps between them.
+///
 /// - Note: When using a plain `Button`, add `.tint(color)` so the underlying
 ///   button style can pick up the right background colour. For
 ///   `role: .destructive` you also need `.tint(.red)` explicitly, since
@@ -37,6 +51,7 @@ import SwiftUI
 public struct AwesomeSwipeButton<Label: View>: View {
 
     private let tint: Color
+    private let cornerRadius: CGFloat
     private let action: () -> Void
     @ViewBuilder private let label: Label
     @Environment(\.swipeCloseAction) private var closeAction
@@ -53,16 +68,20 @@ public struct AwesomeSwipeButton<Label: View>: View {
     ///   - role: An optional button role. When `.destructive`, the tint is
     ///     overridden with `.red`. Other roles are accepted but do not affect
     ///     appearance.
+    ///   - cornerRadius: Radius applied to all four corners of the button's
+    ///     background and content. Default `0` (square corners).
     ///   - action: The closure invoked when the button is tapped. The row is
     ///     automatically closed after the press is released.
     ///   - label: A `@ViewBuilder` producing the button's label content.
     public init(
         tint: Color = .gray,
         role: ButtonRole? = nil,
+        cornerRadius: CGFloat = 0,
         action: @escaping () -> Void,
         @ViewBuilder label: () -> Label
     ) {
         self.tint = (role == .destructive) ? .red : tint
+        self.cornerRadius = cornerRadius
         self.action = action
         self.label = label()
     }
@@ -83,6 +102,7 @@ public struct AwesomeSwipeButton<Label: View>: View {
                        maxHeight: axis == .horizontal ? .infinity : nil)
         }
         .tint(tint)
+        .clipShape(.rect(cornerRadius: cornerRadius))
     }
 }
 
@@ -93,23 +113,31 @@ extension AwesomeSwipeButton where Label == Image {
     ///
     /// ```swift
     /// AwesomeSwipeButton(tint: .blue, systemImage: "pencil") { edit(item) }
-    /// AwesomeSwipeButton(tint: .red, role: .destructive, systemImage: "trash") { delete(item) }
+    /// AwesomeSwipeButton(tint: .red, role: .destructive, cornerRadius: 12,
+    ///                    systemImage: "trash") { delete(item) }
     /// ```
     ///
     /// - Parameters:
     ///   - tint: The button's background colour. Defaults to `.gray`.
     ///   - role: An optional button role. When `.destructive`, the tint is
     ///     overridden with `.red`.
+    ///   - cornerRadius: Radius applied to all four corners. Default `0`.
     ///   - systemImage: The name of the SF Symbol to display.
     ///   - action: The closure invoked when the button is tapped. The row is
     ///     automatically closed after the press is released.
     public init(
         tint: Color = .gray,
         role: ButtonRole? = nil,
+        cornerRadius: CGFloat = 0,
         systemImage: String,
         action: @escaping () -> Void
     ) {
-        self.init(tint: tint, role: role, action: action) {
+        self.init(
+            tint: tint,
+            role: role,
+            cornerRadius: cornerRadius,
+            action: action
+        ) {
             Image(systemName: systemImage)
         }
     }
@@ -118,18 +146,25 @@ extension AwesomeSwipeButton where Label == Image {
 // MARK: - .awesomeButtonStyle modifier
 
 /// Internal `ButtonStyle` that applies the full AwesomeSwipeActions button appearance.
-/// Applied to individual buttons via `.awesomeButtonStyle(tint:)`.
+/// Applied to individual buttons via `.awesomeButtonStyle(tint:)` or
+/// `.awesomeButtonStyle(tint:cornerRadius:)`.
 private struct AwesomeExplicitButtonStyle: ButtonStyle {
     let tint: Color
+    let cornerRadius: CGFloat
 
     func makeBody(configuration: Configuration) -> some View {
-        _AwesomeExplicitButton(configuration: configuration, tint: tint)
+        _AwesomeExplicitButton(
+            configuration: configuration,
+            tint: tint,
+            cornerRadius: cornerRadius
+        )
     }
 }
 
 private struct _AwesomeExplicitButton: View {
     let configuration: ButtonStyleConfiguration
     let tint: Color
+    let cornerRadius: CGFloat
     @Environment(\.swipeCloseAction) private var closeAction
     @Environment(\.swipeAxis) private var axis
 
@@ -144,6 +179,7 @@ private struct _AwesomeExplicitButton: View {
             .frame(maxWidth: axis == .vertical ? .infinity : nil,
                    maxHeight: axis == .horizontal ? .infinity : nil)
             .background(tint)
+            .clipShape(.rect(cornerRadius: cornerRadius))
             .opacity(configuration.isPressed ? 0.75 : 1)
             .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
             .onChange(of: configuration.isPressed) { oldValue, newValue in
@@ -181,6 +217,25 @@ extension View {
     /// - Returns: A view that styles the button to match the swipe-action
     ///   appearance.
     public func awesomeButtonStyle(tint: Color) -> some View {
-        buttonStyle(AwesomeExplicitButtonStyle(tint: tint))
+        buttonStyle(AwesomeExplicitButtonStyle(tint: tint, cornerRadius: 0))
+    }
+
+    /// Applies the standard `AwesomeSwipeActions` button appearance with
+    /// rounded corners.
+    ///
+    /// ```swift
+    /// Button { delete(item) } label: {
+    ///     Label("Delete", systemImage: "trash")
+    /// }
+    /// .awesomeButtonStyle(tint: .red, cornerRadius: 12)
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - tint: The background colour applied to the button.
+    ///   - cornerRadius: Radius applied to all four corners of the button's
+    ///     tinted background.
+    /// - Returns: A view that styles the button with rounded corners.
+    public func awesomeButtonStyle(tint: Color, cornerRadius: CGFloat) -> some View {
+        buttonStyle(AwesomeExplicitButtonStyle(tint: tint, cornerRadius: cornerRadius))
     }
 }

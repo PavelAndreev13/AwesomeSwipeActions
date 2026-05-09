@@ -326,6 +326,133 @@ fileprivate struct VerticalCard: View {
     }
 }
 
+/// Rounded-corner buttons demo: showcases the `cornerRadius:` parameter on
+/// `AwesomeSwipeButton`, including a "pill" variant where label padding
+/// creates visible gaps between adjacent buttons.
+fileprivate struct RoundedButtonsDemo: View {
+    @State private var coordinator = AwesomeSwipeCoordinator()
+    @State private var items = mockItems
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                LazyVStack(spacing: 12) {
+                    ForEach(items) { item in
+                        DemoRow(item: item)
+                            .awesomeSwipeActions(for: item, coordinator: coordinator) {
+                                AwesomeSwipeButton(
+                                    tint: .blue,
+                                    cornerRadius: 12,
+                                    systemImage: "pencil"
+                                ) {
+                                    print("Edit \(item.title)")
+                                }
+                                AwesomeSwipeButton(
+                                    tint: .red,
+                                    role: .destructive,
+                                    cornerRadius: 12,
+                                    systemImage: "trash"
+                                ) {
+                                    items.removeAll { $0.id == item.id }
+                                }
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+            .background(Color(.systemGroupedBackground))
+            .navigationTitle("Rounded Corners")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+}
+
+/// Plain views demo: no custom row type — just `Text` inside an `HStack` —
+/// showing that `awesomeSwipeActions` works on any view, not only on
+/// purpose-built row types.
+fileprivate struct PlainViewsDemo: View {
+    @State private var coordinator = AwesomeSwipeCoordinator()
+    @State private var items = mockItems
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                LazyVStack(spacing: 1) {
+                    ForEach(items) { item in
+                        HStack {
+                            Image(systemName: "circle.fill")
+                                .foregroundStyle(.blue)
+                            Text(item.title)
+                                .font(.body)
+                            Spacer()
+                            Text("›")
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+                        .background(Color(.systemBackground))
+                        .awesomeSwipeActions(for: item, coordinator: coordinator) {
+                            AwesomeSwipeButton(
+                                tint: .red,
+                                role: .destructive,
+                                systemImage: "trash"
+                            ) {
+                                items.removeAll { $0.id == item.id }
+                            }
+                        }
+                    }
+                }
+            }
+            .background(Color(.systemGroupedBackground))
+            .navigationTitle("Plain Views")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+}
+
+/// Pill-button demo: rounded corners + label padding produces capsule-style
+/// buttons with gaps between them.
+fileprivate struct PillButtonsDemo: View {
+    @State private var coordinator = AwesomeSwipeCoordinator()
+    @State private var items = mockItems
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                LazyVStack(spacing: 12) {
+                    ForEach(items) { item in
+                        DemoRow(item: item)
+                            .awesomeSwipeActions(for: item, coordinator: coordinator) {
+                                AwesomeSwipeButton(tint: .orange, cornerRadius: 999) {
+                                    print("Star \(item.title)")
+                                } label: {
+                                    Image(systemName: "star.fill")
+                                        .padding(8)
+                                }
+                                AwesomeSwipeButton(
+                                    tint: .red,
+                                    role: .destructive,
+                                    cornerRadius: 999
+                                ) {
+                                    items.removeAll { $0.id == item.id }
+                                } label: {
+                                    Image(systemName: "trash")
+                                        .padding(8)
+                                }
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+            .background(Color(.systemGroupedBackground))
+            .navigationTitle("Pill Buttons")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+}
+
 // MARK: PreviewProvider
 
 /// Standard SwiftUI Button demo — shows that .tint() + .frame() is all that's needed.
@@ -390,6 +517,12 @@ struct AwesomeSwipeActions_Previews: PreviewProvider {
             .previewDisplayName("Vertical — Top & Bottom")
         StandardButtonDemo()
             .previewDisplayName("Standard SwiftUI Button")
+        RoundedButtonsDemo()
+            .previewDisplayName("Rounded Corners")
+        PillButtonsDemo()
+            .previewDisplayName("Pill Buttons")
+        PlainViewsDemo()
+            .previewDisplayName("Plain Views")
     }
 }
 #endif

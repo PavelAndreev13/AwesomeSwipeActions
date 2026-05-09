@@ -139,7 +139,7 @@ ScrollView {
    ```
    https://github.com/PavelAndreev13/AwesomeSwipeActions
    ```
-3. Choose **Up to Next Major Version** starting at `2.0.0`.
+3. Choose **Up to Next Major Version** starting at `2.2.0`.
 4. Click **Add Package**.
 
 #### In `Package.swift`
@@ -282,15 +282,6 @@ ScrollView(.horizontal) {
     }
 }
 ```
-
-> **⚠️ Axis-conflict caveat.** A vertical swipe inside a vertical `ScrollView` shares the gesture axis with the scroll view, and one of them will lose. Use the table below to pick a safe combination:
->
-> | | scroll axis: vertical | scroll axis: horizontal | non-scrolling |
-> |---|---|---|---|
-> | `.leading` / `.trailing` | ✅ | ⚠️ conflict | ✅ |
-> | `.top` / `.bottom` | ⚠️ conflict | ✅ | ✅ |
->
-> When the swipe axis is perpendicular to (or unrelated to) the scroll axis, gesture coordination is automatic via the built-in 50° angle filter. When they coincide, treat the combination as unsupported.
 
 > **🛡 Tell the modifier where it lives.** The optional **`containerAxis: Axis?`** parameter lets you declare the enclosing scroll-axis explicitly. In **DEBUG builds** the modifier prints a one-time console hint when:
 > - You use a vertical edge (`.top` / `.bottom`) without setting `containerAxis` — a generic reminder that vertical edges only work in horizontal-scrolling or non-scrolling containers.
@@ -550,7 +541,11 @@ Cross-cell coordination happens via `.onReceive(coordinator.$activeKey)` — an 
 
 ### Scroll conflict prevention
 
-The first drag sample computes the angle from horizontal using `atan2(dy, dx)`. If the angle exceeds 50° the gesture is flagged as vertical and all subsequent samples are ignored, allowing the scroll view to take over naturally.
+Two layers of protection:
+
+1. **Drag minimum-distance threshold.** `DragGesture` uses a `minimumDistance` of **10 pt** on iOS 17 / 18 / macOS 14 / 15 / visionOS 1 — small enough for snappy swipes. On **iOS 26+** the same threshold is bumped to **30 pt** via `#available`, because the iOS 26 SDK changed `ScrollView`'s pan-recognizer priority — at 10 pt our gesture would win against scroll. 30 pt gives the scroll-view's recognizer enough room to claim vertical drags first. Fully transparent — pre-26 builds keep the original feel.
+
+2. **First-sample angle filter.** Once a drag is recognised, the modifier computes the gesture angle on the first sample using `atan2`. If the angle is more than **50° off the swipe axis** the drag is flagged as cross-axis and all subsequent samples are ignored, letting the scroll view take over naturally. Horizontal edges (`.leading` / `.trailing`) reject vertical drags this way; vertical edges (`.top` / `.bottom`) do the inverse.
 
 ### Rubber-band physics
 
@@ -568,7 +563,9 @@ This produces progressively increasing resistance identical to the native feel.
 
 ---
 
-## Migration from v1.x
+## Migration
+
+### From v1.x → v2.x
 
 Version 2.0 renames the `edge:` parameter to `from:` and changes its type from `HorizontalEdge` to SwiftUI's four-case `Edge`. For most call sites it's a single-token edit:
 
@@ -582,6 +579,13 @@ Calls that omitted `edge:` (relying on the default `.trailing`) compile unchange
 If you upgrade without renaming, the v1 overloads are kept as `@available(*, deprecated)` bridges and Xcode offers a one-tap fix-it. Both overloads will be removed in v3.
 
 `closeAll()` was renamed to `close()` in v1 and remains as a deprecated alias; use `close()`.
+
+### From v2.0 → v2.1 / v2.2 (additive — no action required)
+
+- **2.1.0** added the `cornerRadius:` parameter on `AwesomeSwipeButton` and the `awesomeButtonStyle(tint:cornerRadius:)` overload. Existing calls compile unchanged with the default `0` (square corners).
+- **2.2.0** fixed vertical scroll on iOS 26 (transparent — no API change) and added the optional `containerAxis: Axis? = nil` hint parameter. Existing 2.0 / 2.1 calls compile unchanged.
+
+No code changes are required when bumping inside the v2.x range; SPM resolves the latest minor automatically.
 
 ---
 

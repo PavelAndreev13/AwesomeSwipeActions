@@ -243,6 +243,18 @@ ItemRow(item)
 
 ### Vertical edges (top / bottom)
 
+> ## 🚫 Not supported: vertical edge **inside a vertical `ScrollView`**
+>
+> Vertical swipe edges (`.top`, `.bottom`) share their gesture axis with a vertical-scrolling parent. Both gestures want the same drag, so **either scroll or swipe will silently break** depending on the iOS version. This is a fundamental gesture-system limitation, not something the library can resolve.
+>
+> | Container | `.leading` / `.trailing` | `.top` / `.bottom` |
+> |---|:---:|:---:|
+> | **Vertical `ScrollView`** (most common) | ✅ supported | 🚫 **NOT supported** |
+> | **Horizontal `ScrollView`** | 🚫 **NOT supported** | ✅ supported |
+> | Non-scrolling container | ✅ supported | ✅ supported |
+>
+> Pick the **edge axis perpendicular to the scroll axis** (or use a non-scrolling container). The library prints DEBUG-only console hints when it suspects a mismatch — see the *containerAxis* note below.
+
 Swipe **up** or **down** on a card to reveal actions from the `.bottom` or `.top` edges. Vertical swipes shine on cards inside a horizontal scroll view, where the swipe axis is perpendicular to the scroll axis:
 
 ```swift

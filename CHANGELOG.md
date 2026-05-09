@@ -5,6 +5,56 @@ All notable changes to **AwesomeSwipeActions** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] — 2026-05-09
+
+### Fixed
+
+- **Scroll inside `ScrollView` on iOS 26.** A change in the iOS 26 SDK's
+  gesture-priority resolution caused our `DragGesture(minimumDistance: 10)`
+  to win against `ScrollView`'s pan recognizer, blocking vertical scroll in
+  lists with `awesomeSwipeActions` modifiers. Bumped the threshold to 30 pt
+  for iOS 26+ via `#available`; iOS 17 / iOS 18 / macOS 14 / macOS 15 /
+  visionOS 1 keep the original 10 pt feel and are unaffected. Verified
+  manually on **iPhone 17 Pro (iOS 26.2)** and **iPhone 16 (iOS 18.6)**.
+
+### Added
+
+- **`containerAxis: Axis? = nil`** opt-in parameter on both
+  `awesomeSwipeActions(...)` overloads. Lets you declare the enclosing
+  scroll-axis explicitly so the modifier can warn about edge / axis
+  mismatches in DEBUG builds. Default `nil` = no validation; fully
+  backward-compatible — existing 2.1.x callers compile unchanged.
+  ```swift
+  ScrollView(.horizontal) {
+      LazyHStack {
+          ForEach(items) { item in
+              Card(item: item)
+                  .awesomeSwipeActions(
+                      for: item,
+                      coordinator: coordinator,
+                      from: .top,
+                      containerAxis: .horizontal   // silences DEBUG hint
+                  ) { … }
+          }
+      }
+  }
+  ```
+- **DEBUG-only console hints** for vertical edges. When a modifier with
+  `from: .top` or `.bottom` first appears, the package logs a one-time
+  hint reminding you that vertical edges only work in horizontal-scrolling
+  or non-scrolling containers. Pass `containerAxis: .horizontal` to
+  silence the hint, or `containerAxis: .vertical` to confirm a known
+  conflict (which then escalates to a more pointed warning). All output
+  is gated behind `#if DEBUG` and absent in release builds.
+
+### Notes
+
+- The `containerAxis:` parameter is **purely informational**.
+  AwesomeSwipeActions cannot programmatically inspect the parent
+  `ScrollView`'s axis without UIKit interop, which would break the
+  pure-SwiftUI promise of the library. The hint mechanism makes the
+  documented constraint visible at runtime instead of silent.
+
 ## [2.1.0] — 2026-05-09
 
 ### Added
@@ -151,6 +201,7 @@ Initial public release.
   compatibility with pre-1.0 betas; it will be removed in a future major
   version.
 
+[2.2.0]: https://github.com/PavelAndreev13/AwesomeSwipeActions/releases/tag/2.2.0
 [2.1.0]: https://github.com/PavelAndreev13/AwesomeSwipeActions/releases/tag/2.1.0
 [2.0.0]: https://github.com/PavelAndreev13/AwesomeSwipeActions/releases/tag/2.0.0
 [1.0.0]: https://github.com/PavelAndreev13/AwesomeSwipeActions/releases/tag/1.0.0

@@ -32,6 +32,12 @@ struct AwesomeSwipeModifier<ID: Hashable & Sendable, ActionContent: View>: ViewM
     /// body invalidation. Coordination happens only in `.onReceive`.
     let coordinator: AwesomeSwipeCoordinator
     let edge: Edge
+    /// Optional explicit hint about the axis of the enclosing scroll view.
+    /// `nil` = no validation. When set, in DEBUG builds the modifier emits a
+    /// one-time console warning if it matches the swipe edge's axis (a
+    /// well-known unsupported combination because the swipe gesture and the
+    /// scroll gesture both want the same drag).
+    let containerAxis: Axis?
     let actionContent: ActionContent
 
     /// Concentrates all axis-conditional decisions in one place. Constructed
@@ -58,6 +64,10 @@ struct AwesomeSwipeModifier<ID: Hashable & Sendable, ActionContent: View>: ViewM
     /// ends. `nil` = undecided, `true` = cross-axis (ignored, scroll wins),
     /// `false` = on-axis (active).
     @State private var gestureIsCrossAxis: Bool? = nil
+    /// Single-shot flag so axis-conflict console hints are emitted only once
+    /// per modifier instance, even if `onAppear` fires multiple times due to
+    /// scroll-recycling or layout updates. DEBUG-only.
+    @State private var didEmitAxisWarning = false
 
     // MARK: - Accessibility
 
@@ -154,12 +164,75 @@ struct AwesomeSwipeModifier<ID: Hashable & Sendable, ActionContent: View>: ViewM
                 closeAnimated()
             }
         }
+        .onAppear { warnIfAxisConflictIfNeeded() }
+    }
+
+    // MARK: - Axis conflict diagnostics (DEBUG-only)
+
+    /// Emits a one-time console warning when the modifier is configured in a
+    /// known unsupported way:
+    /// - **Case A:** `containerAxis` was provided and equals the swipe-edge
+    ///   axis (e.g. `from: .top` + `containerAxis: .vertical`). Both gestures
+    ///   want the same drag; scroll and swipe will fight.
+    /// - **Case B:** `containerAxis` was *not* provided and the swipe edge is
+    ///   vertical (`.top` / `.bottom`). Vertical edges are the rarer, more
+    ///   error-prone variant — print a generic hint reminding the developer
+    ///   to verify the enclosing scroll axis.
+    ///
+    /// All output is gated by `#if DEBUG` and absent in release builds.
+    private func warnIfAxisConflictIfNeeded() {
+        #if DEBUG
+        guard !didEmitAxisWarning else { return }
+        let edgeAxis = strategy.axis
+
+        if let container = containerAxis, container == edgeAxis {
+            didEmitAxisWarning = true
+            print("""
+            [AwesomeSwipeActions] axis conflict on row id=\(id):
+              edge .\(edge) has axis .\(edgeAxis)
+              containerAxis is also .\(container)
+            Vertical edges (.top/.bottom) require horizontal-scrolling or \
+            non-scrolling containers; horizontal edges (.leading/.trailing) \
+            require vertical-scrolling or non-scrolling containers. Place \
+            this modifier in a perpendicular-axis container, or use a \
+            different edge. See: Choosing-Edges DocC article.
+            """)
+            return
+        }
+
+        if containerAxis == nil, edgeAxis == .vertical {
+            didEmitAxisWarning = true
+            print("""
+            [AwesomeSwipeActions] hint on row id=\(id): vertical edge .\(edge) \
+            works only inside a horizontal-scrolling container or a \
+            non-scrolling layout. Inside a vertical ScrollView the swipe \
+            gesture conflicts with scroll. Add `containerAxis: .horizontal` \
+            to silence this hint, or switch to .leading/.trailing for \
+            vertical lists.
+            """)
+        }
+        #endif
     }
 
     // MARK: - Gesture
 
+    /// Minimum drag distance before our gesture fires. On iOS 26 Apple raised
+    /// `ScrollView`'s internal pan threshold and changed simultaneous-gesture
+    /// resolution — a 10pt threshold here causes our `DragGesture` to win
+    /// against the scroll pan, so the list refuses to scroll vertically. Bump
+    /// to 30pt only on iOS 26+ so the ScrollView's scroll pan starts first;
+    /// keeps iOS 17/18 untouched (still 10pt, where the original snappy feel
+    /// is correct).
+    private var dragMinimumDistance: CGFloat {
+        if #available(iOS 26.0, macOS 26.0, visionOS 26.0, *) {
+            return 30
+        } else {
+            return 10
+        }
+    }
+
     private var swipeGesture: some Gesture {
-        DragGesture(minimumDistance: 10)
+        DragGesture(minimumDistance: dragMinimumDistance)
             .onChanged(handleDragChanged)
             .onEnded(handleDragEnded)
     }

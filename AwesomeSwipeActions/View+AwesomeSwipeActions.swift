@@ -42,6 +42,11 @@ extension View {
     ///     a vertical `ScrollView`) or `.top` / `.bottom` for vertical swipes
     ///     (works best inside a horizontal scroll axis or non-scrolling
     ///     containers — see the *Choosing edges* article in the DocC).
+    ///   - containerAxis: Optional hint about the axis of the enclosing
+    ///     scroll view. When you set this, in DEBUG builds the modifier
+    ///     prints a one-time console warning if the axis equals the swipe
+    ///     edge's axis (a known unsupported combination). Default: `nil`
+    ///     (no validation). Has no effect in release builds.
     ///   - content: A `@ViewBuilder` closure containing action buttons —
     ///     ``AwesomeSwipeButton``, or any SwiftUI `Button`.
     /// - Returns: A view that responds to swipes from the given edge by
@@ -50,6 +55,7 @@ extension View {
         id: ID,
         coordinator: AwesomeSwipeCoordinator,
         from edge: Edge = .trailing,
+        containerAxis: Axis? = nil,
         @ViewBuilder content: () -> ActionContent
     ) -> some View {
         let builtContent = content()
@@ -58,6 +64,7 @@ extension View {
                 id: id,
                 coordinator: coordinator,
                 edge: edge,
+                containerAxis: containerAxis,
                 actionContent: builtContent
             )
         )
@@ -81,6 +88,8 @@ extension View {
     ///   - item: The row's source item. Its `.id` is used as the coordination key.
     ///   - coordinator: A shared coordinator instance created with `@State`.
     ///   - edge: The edge from which actions slide in. Default: `.trailing`.
+    ///   - containerAxis: Optional hint about the axis of the enclosing
+    ///     scroll view. See the primary overload for details.
     ///   - content: A `@ViewBuilder` closure containing action buttons.
     /// - Returns: A view that responds to swipes from the given edge by
     ///   revealing the provided action buttons.
@@ -88,12 +97,14 @@ extension View {
         for item: Item,
         coordinator: AwesomeSwipeCoordinator,
         from edge: Edge = .trailing,
+        containerAxis: Axis? = nil,
         @ViewBuilder content: () -> ActionContent
     ) -> some View where Item.ID: Hashable & Sendable {
         awesomeSwipeActions(
             id: item.id,
             coordinator: coordinator,
             from: edge,
+            containerAxis: containerAxis,
             content: content
         )
     }

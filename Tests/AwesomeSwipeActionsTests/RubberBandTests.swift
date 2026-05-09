@@ -19,6 +19,7 @@ struct RubberBandTests {
             id: "test",
             coordinator: AwesomeSwipeCoordinator(),
             edge: .trailing,
+            containerAxis: nil,
             actionContent: EmptyView()
         )
     }

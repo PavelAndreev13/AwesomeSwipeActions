@@ -124,7 +124,7 @@ ScrollView {
 | visionOS | 1.0 |
 | Swift | 5.9 |
 | Xcode | 15.0 |
-| Library version | **2.1.0** |
+| Library version | **2.2.0** |
 
 ---
 
@@ -146,7 +146,7 @@ ScrollView {
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/PavelAndreev13/AwesomeSwipeActions", from: "2.1.0")
+    .package(url: "https://github.com/PavelAndreev13/AwesomeSwipeActions", from: "2.2.0")
 ],
 targets: [
     .target(
@@ -250,12 +250,18 @@ ScrollView(.horizontal) {
     LazyHStack(spacing: 12) {
         ForEach(items) { item in
             Card(item: item)
-                .awesomeSwipeActions(for: item, coordinator: coordinator, from: .top) {
+                .awesomeSwipeActions(
+                    for: item, coordinator: coordinator,
+                    from: .top, containerAxis: .horizontal
+                ) {
                     AwesomeSwipeButton(tint: .orange, systemImage: "star.fill") {
                         favourite(item)
                     }
                 }
-                .awesomeSwipeActions(for: item, coordinator: coordinator, from: .bottom) {
+                .awesomeSwipeActions(
+                    for: item, coordinator: coordinator,
+                    from: .bottom, containerAxis: .horizontal
+                ) {
                     AwesomeSwipeButton(tint: .red, role: .destructive, systemImage: "trash") {
                         delete(item)
                     }
@@ -273,6 +279,12 @@ ScrollView(.horizontal) {
 > | `.top` / `.bottom` | ⚠️ conflict | ✅ | ✅ |
 >
 > When the swipe axis is perpendicular to (or unrelated to) the scroll axis, gesture coordination is automatic via the built-in 50° angle filter. When they coincide, treat the combination as unsupported.
+
+> **🛡 Tell the modifier where it lives.** The optional **`containerAxis: Axis?`** parameter lets you declare the enclosing scroll-axis explicitly. In **DEBUG builds** the modifier prints a one-time console hint when:
+> - You use a vertical edge (`.top` / `.bottom`) without setting `containerAxis` — a generic reminder that vertical edges only work in horizontal-scrolling or non-scrolling containers.
+> - You set `containerAxis:` to the same axis as the swipe edge — a more pointed warning that this exact combination is the conflict in the table above.
+>
+> Both warnings are gated behind `#if DEBUG` and absent from release builds. Pass `containerAxis: .horizontal` in `LazyHStack` carousels (as above) to declare your intent and silence the generic hint. The library cannot detect the parent's axis automatically — that would require UIKit interop, which would break the pure-SwiftUI guarantee.
 
 ### Rounded corners
 
@@ -401,13 +413,14 @@ When the user has **Reduce Motion** enabled in System Settings → Accessibility
 
 ## API Reference
 
-### `awesomeSwipeActions(id:coordinator:from:content:)`
+### `awesomeSwipeActions(id:coordinator:from:containerAxis:content:)`
 
 ```swift
 func awesomeSwipeActions<ID: Hashable & Sendable, ActionContent: View>(
     id: ID,
     coordinator: AwesomeSwipeCoordinator,
     from edge: Edge = .trailing,
+    containerAxis: Axis? = nil,
     @ViewBuilder content: () -> ActionContent
 ) -> some View
 ```
@@ -417,9 +430,10 @@ func awesomeSwipeActions<ID: Hashable & Sendable, ActionContent: View>(
 | `id` | A unique identifier for the row, used to coordinate open/close state. |
 | `coordinator` | A shared `AwesomeSwipeCoordinator` instance created with `@State`. |
 | `from` | The `Edge` from which actions slide in. Default: `.trailing`. Accepts `.top`, `.leading`, `.bottom`, `.trailing`. |
+| `containerAxis` | Optional hint about the axis of the enclosing scroll view. Used in DEBUG builds to surface edge / axis mismatches as console warnings; ignored in release builds. Default: `nil` (no validation). |
 | `content` | A `@ViewBuilder` closure containing the action buttons. |
 
-### `awesomeSwipeActions(for:coordinator:from:content:)`
+### `awesomeSwipeActions(for:coordinator:from:containerAxis:content:)`
 
 Convenience overload for `Identifiable` data — uses `item.id` automatically.
 
@@ -428,6 +442,7 @@ func awesomeSwipeActions<Item: Identifiable, ActionContent: View>(
     for item: Item,
     coordinator: AwesomeSwipeCoordinator,
     from edge: Edge = .trailing,
+    containerAxis: Axis? = nil,
     @ViewBuilder content: () -> ActionContent
 ) -> some View where Item.ID: Hashable & Sendable
 ```

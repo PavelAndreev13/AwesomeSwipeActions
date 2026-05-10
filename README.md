@@ -1,7 +1,12 @@
 <div align="center">
-<img width="700" height="168" alt="asa-logo-horizontal-dark 1" src="https://github.com/user-attachments/assets/9e80dc0a-f7e0-4e55-8f14-ab09f1c75fbd" />
 
-<img width="400" height="600" alt="no_name" src="https://github.com/user-attachments/assets/c160aedc-cdc6-4614-8999-69caef3d3aea" />
+<img width="622" height="264" alt="CompleteImage" src="https://github.com/user-attachments/assets/f0fd81fd-402e-48bb-bfa3-8c9e1afe95c9" />
+
+
+
+<img width="250" height="500" alt="preview_vertical_git" src="https://github.com/user-attachments/assets/b8eea67c-b1f1-4bb8-a308-efcaa2827a8b" />
+<img width="250" height="500" alt="horizont_preview_git" src="https://github.com/user-attachments/assets/3050c4e0-1f5d-4008-94ab-023ca9a19f46" />
+
 
 
   <h1>AwesomeSwipeActions</h1>
